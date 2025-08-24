@@ -143,16 +143,81 @@
     </div>
 
     <div class="section stage-list">
-      <h2>CTF Stages</h2>
-      <ol>
-        <li><strong>Stage 1: SIGNAL IN THE STATIC</strong><br>Use OSINT to locate Do Good Industries HQ via Instagram clues.</strong><label for="accesscode">Access Code:</label>
-      <input type="password" id="accesscode" name="accesscode" placeholder="********"></li>
-        <li><strong>Stage 2: ENTRY PROTOCOL</strong><br>Clone badges and bypass smart locks to breach the facility.</li></strong><label for="accesscode">Access Code:</label> <input type="password" id="accesscode" name="accesscode" placeholder="********"></li>
-        <li><strong>Stage 3: SHADOWDANCE</strong><br>Evade cameras, drones, and Sentinels using stealth logic.</li></strong><label for="accesscode">Access Code:</label> <input type="password" id="accesscode" name="accesscode" placeholder="********"></li>
-        <li><strong>Stage 4: THE ROOM WITH NO NAME</strong><br>Decrypt and solve puzzles to retrieve the kill switch.</li></strong><label for="accesscode">Access Code:</label> <input type="password" id="accesscode" name="accesscode" placeholder="********"></li>
-        <li><strong>Stage 5: CASCADE FAILURE</strong><br>Attempt the shutdown — and watch it fail. The AI is ready.</li></strong><label for="accesscode">Access Code:</label> <input type="password" id="accesscode" name="accesscode" placeholder="********"></li>
-      </ol>
-    </div>
+  <h2>CTF Stages</h2>
+  <ol>
+    <li>
+      <strong>Stage 1: SIGNAL IN THE STATIC</strong><br>
+      Use OSINT to locate Do Good Industries HQ via Instagram clues.<br>
+      <label for="access1">Access Code:</label>
+      <input type="password" id="access1" placeholder="********">
+      <button onclick="checkCode('access1', 'link1')">Submit</button>
+      <div id="link1" style="display:none; margin-top:10px;">
+        <a href="stage2.html" target="_blank">Access Granted – Proceed to Stage 2</a>
+      </div>
+    </li>
+
+    <li>
+      <strong>Stage 2: ENTRY PROTOCOL</strong><br>
+      Clone badges and bypass smart locks to breach the facility.<br>
+      <label for="access2">Access Code:</label>
+      <input type="password" id="access2" placeholder="********">
+      <button onclick="checkCode('access2', 'link2')">Submit</button>
+      <div id="link2" style="display:none; margin-top:10px;">
+        <a href="stage3.html" target="_blank">Access Granted – Proceed to Stage 3</a>
+      </div>
+    </li>
+
+    <li>
+      <strong>Stage 3: SHADOWDANCE</strong><br>
+      Evade cameras, drones, and Sentinels using stealth logic.<br>
+      <label for="access3">Access Code:</label>
+      <input type="password" id="access3" placeholder="********">
+      <button onclick="checkCode('access3', 'link3')">Submit</button>
+      <div id="link3" style="display:none; margin-top:10px;">
+        <a href="stage4.html" target="_blank">Access Granted – Proceed to Stage 4</a>
+      </div>
+    </li>
+
+    <li>
+      <strong>Stage 4: THE ROOM WITH NO NAME</strong><br>
+      Decrypt and solve puzzles to retrieve the kill switch.<br>
+      <label for="access4">Access Code:</label>
+      <input type="password" id="access4" placeholder="********">
+      <button onclick="checkCode('access4', 'link4')">Submit</button>
+      <div id="link4" style="display:none; margin-top:10px;">
+        <a href="stage5.html" target="_blank">Access Granted – Proceed to Stage 5</a>
+      </div>
+    </li>
+
+    <li>
+      <strong>Stage 5: CASCADE FAILURE</strong><br>
+      Attempt the shutdown — and watch it fail. The AI is ready.<br>
+      <label for="access5">Access Code:</label>
+      <input type="password" id="access5" placeholder="********">
+      <button onclick="checkCode('access5', 'link5')">Submit</button>
+      <div id="link5" style="display:none; margin-top:10px;">
+        <a href="end.html" target="_blank">Access Granted – Initiate Final Protocol</a>
+      </div>
+    </li>
+  </ol>
+</div>
+
+<script>
+  function checkCode(inputId, linkId) {
+    const input = document.getElementById(inputId);
+    const link = document.getElementById(linkId);
+    const correctCode = '1234'; // Set to correct code per stage later
+
+    if (input.value === correctCode) {
+      link.style.display = 'block';
+      input.style.border = '2px solid #00ff00';
+    } else {
+      input.style.border = '2px solid red';
+      link.style.display = 'none';
+    }
+  }
+</script>
+
 
     <div class="section">
       <p>This is just the beginning...</p>
