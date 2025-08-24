@@ -14,14 +14,14 @@
       background-position: center;
       background-attachment: fixed;
 
-      color: #f2f2f2;
+      color: #ccff00; /* acid green */
       font-family: 'Courier New', monospace;
       margin: 0;
       padding: 0;
     }
 
     header {
-      background: linear-gradient(90deg, rgba(155, 0, 232, 0.9), rgba(0, 240, 255, 0.9));
+      background: linear-gradient(90deg, rgba(204, 0, 255, 0.9), rgba(0, 255, 0, 0.9));
       padding: 2rem;
       text-align: center;
     }
@@ -29,6 +29,7 @@
     header h1 {
       margin: 0;
       font-size: 2.5rem;
+      color: #ccff00; /* acid green */
     }
 
     main {
@@ -46,13 +47,13 @@
     .stage-list {
       background-color: #1a1a1a;
       padding: 1rem;
-      border-left: 4px solid #9b00e8;
+      border-left: 4px solid #cc00ff; /* neon purple */
     }
 
     .start-button {
       display: inline-block;
-      background-color: #9b00e8;
-      color: white;
+      background-color: #cc00ff; /* neon purple */
+      color: #ccff00; /* acid green */
       padding: 1rem 2rem;
       font-size: 1.2rem;
       text-decoration: none;
@@ -62,11 +63,11 @@
     }
 
     .start-button:hover {
-      background-color: #7a00c2;
+      background-color: #9900cc;
     }
 
     a {
-      color: #00f0ff;
+      color: #ccff00;
       text-decoration: none;
     }
 
@@ -91,7 +92,7 @@
 
   <main>
     <div class="section">
-      <p>Welcome to <strong>GHOSTSTRATS // BLACKWIRE</strong>, a cyberpunk CTF where you play as a rogue operative trying to take down NEXUS — a sentient AI built in secret by Do Good Industries.</p>
+      <p>Welcome to <strong>GHOSTSTRATS // NOTORIOUS SQUIRREL CTF</strong>, a cyberpunk CTF where you play as a rogue citizen trying to take down NEXUS — a sentient AI built in secret by Do Good Industries, set in a post AI apocolyps.</p>
       <p>Track the corporation. Infiltrate the HQ. Evade the watchers. Find the kill switch. Shut it all down... or die trying.</p>
     </div>
 
@@ -108,13 +109,9 @@
     </div>
 
     <div class="section">
-      <p><strong>This is just the beginning.</strong> Part II: THE SHATTERED SIGNAL is coming soon...</p>
-      <p>Follow the <a href="https://www.instagram.com/dogoodchocolates/" target="_blank">Instagram feed</a> to start the hunt.</p>
-    </div>
+      <p><strong>This is just the beginning....
+      
   </main>
 
   <footer>
     &copy; 2025 GHOSTSTRATS CTF // Designed by Notorious Squirrel
-  </footer>
-</body>
-</html>
