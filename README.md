@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="A cyberpunk CTF to take down the rogue AI NEXUS.">
-  <title>GHOSTSTRATS // BLACKWIRE</title>
+  <title>GHOSTSTRATS // NOTORIOUS SQUIRREL</title>
 
   <style>
     body {
