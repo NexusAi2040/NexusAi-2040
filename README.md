@@ -81,21 +81,23 @@
     </div>
 
     <div class="section stage-list">
-      <h2>CTF Stages</h2>
-      <ol>
-        <li><strong>Stage 1: SIGNAL IN THE STATIC</strong><br>Use OSINT to locate Do Good Industries HQ via Instagram clues.</li>
-        <li><strong>Stage 2: ENTRY PROTOCOL</strong><br>Clone badges and bypass smart locks to breach the facility.</li>
-        <li><strong>Stage 3: SHADOWDANCE</strong><br>Evade cameras, drones, and Sentinels using stealth logic.</li>
-        <li><strong>Stage 4: THE ROOM WITH NO NAME</strong><br>Decrypt and solve puzzles to retrieve the kill switch.</li>
-        <li><strong>Stage 5: CASCADE FAILURE</strong><br>Attempt the shutdown — and watch it fail. The AI is ready.</li>
-      </ol>
+  <h2>CTF Stages</h2>
+  <ol>
+    <li><strong>Stage 1: SIGNAL IN THE STATIC</strong><br>Use OSINT to locate Do Good Industries HQ via Instagram clues.</li>
+    <li><strong>Stage 2: ENTRY PROTOCOL</strong><br>Clone badges and bypass smart locks to breach the facility.</li>
+    <li><strong>Stage 3: SHADOWDANCE</strong><br>Evade cameras, drones, and Sentinels using stealth logic.</li>
+    <li><strong>Stage 4: THE ROOM WITH NO NAME</strong><br>Decrypt and solve puzzles to retrieve the kill switch.</li>
+    <li><strong>Stage 5: CASCADE FAILURE</strong><br>Attempt the shutdown — and watch it fail. The AI is ready.</li>
+  </ol>
 
-       <p><a href="stage1.html" class="start-button">▶ START HERE</a></p>
-    </div>
+        
+    <p><a href="stage1.html" class="start-button">▶ START HE1E</a></p>
+</div>
 
-    <div class="section">
-      <p>This is just the beginning. <strong>Part II: THE SHATTERED SIGNAL</strong> is coming soon...</p>
-      <p>Follow the <a href="https://www.instagram.com/dogoodchocolates/" target="_blank">Instagram feed</a> to start the hunt.</p>
+<div class="section">
+ <strong>This is just the beginning. 
+</div>
+
     </div>
   </main>
 
