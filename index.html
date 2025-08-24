@@ -129,9 +129,10 @@
       <input type="password" id="accesscode" name="accesscode" placeholder="********">
     </form>
     <div id="killswitch-link" style="display:none; margin-top:10px;">
-      <a href="silence-over-the-airways.mp4" target="_blank" style="color:#00f0ff;">🗝️ Access Granted – Play File</a>
+      <a href="endofnexus.mp4" target="_blank" style="color:#00f0ff;">🗝️ Access Granted – Play File</a>
     </div>
   </div>
+
 
 
  <header>
@@ -221,7 +222,7 @@
 <script>
   function checkKillSwitch() {
     const input = document.getElementById('accesscode').value.trim();
-    const expected = atob('MTc5Mw=='); // base64 for "1793"
+    const expected = atob('MTc5Mw=='); // Base64 for "1793"
 
     if (input === expected) {
       document.getElementById('killswitch-link').style.display = 'block';
@@ -230,9 +231,10 @@
       document.getElementById('killswitch-link').style.display = 'none';
       document.getElementById('accesscode').style.border = '2px solid red';
     }
-    return false; // Prevent form submit
+    return false; // Prevent form submission
   }
 </script>
+
 
 
 
