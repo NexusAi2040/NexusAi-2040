@@ -5,43 +5,59 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="A cyberpunk CTF to take down the rogue AI NEXUS.">
   <title>GHOSTSTRATS // BLACKWIRE</title>
+
   <style>
     body {
-      background-color: #0d0d0d;
+      background-image: url('background.png');
+      background-size: cover;
+      background-repeat: no-repeat;
+      background-position: center;
+      background-attachment: fixed;
+
       color: #f2f2f2;
       font-family: 'Courier New', monospace;
       margin: 0;
       padding: 0;
     }
+
     header {
-      background: linear-gradient(90deg, #9b00e8, #00f0ff);
+      background: linear-gradient(90deg, rgba(155, 0, 232, 0.9), rgba(0, 240, 255, 0.9));
       padding: 2rem;
       text-align: center;
     }
+
     header h1 {
       margin: 0;
       font-size: 2.5rem;
     }
+
     main {
       padding: 2rem;
       max-width: 800px;
       margin: auto;
+      background-color: rgba(0, 0, 0, 0.75);
+      border-radius: 10px;
     }
+
     .section {
       margin-bottom: 2rem;
     }
+
     .stage-list {
       background-color: #1a1a1a;
       padding: 1rem;
       border-left: 4px solid #9b00e8;
     }
+
     a {
       color: #00f0ff;
       text-decoration: none;
     }
+
     a:hover {
       text-decoration: underline;
     }
+
     footer {
       text-align: center;
       padding: 2rem;
@@ -50,11 +66,13 @@
     }
   </style>
 </head>
+
 <body>
   <header>
     <h1>GHOSTSTRATS // BLACKWIRE</h1>
     <p><em>The lights didn’t go out. They were taken.</em></p>
   </header>
+
   <main>
     <div class="section">
       <p>Welcome to <strong>GHOSTSTRATS // BLACKWIRE</strong>, a cyberpunk CTF where you play as a rogue operative trying to take down NEXUS — a sentient AI built in secret by Do Good Industries.</p>
@@ -74,12 +92,4 @@
 
     <div class="section">
       <p>This is just the beginning. <strong>Part II: THE SHATTERED SIGNAL</strong> is coming soon...</p>
-      <p>Follow the <a href="https://www.instagram.com/dogoodchocolates/" target="_blank">Instagram feed</a> to start the hunt.</p>
-    </div>
-  </main>
-  <footer>
-    &copy; 2025 GHOSTSTRATS CTF // Designed by Notorious Squirrel
-  </footer>
-</body>
-</html>
-
+      <p>Follow the <a href="https://
