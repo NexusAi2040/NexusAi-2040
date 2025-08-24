@@ -92,7 +92,7 @@
 
   <main>
     <div class="section">
-      <p>Welcome to <strong>GHOSTSTRATS // NOTORIOUS SQUIRREL CTF</strong>, a cyberpunk CTF where you play as a rogue citizen trying to take down NEXUS — a sentient AI built in secret by Do Good Industries, set in a post AI apocolyps.</p>
+      <p>Welcome to <strong>GHOSTSTRATS // NOTORIOUS SQUIRREL CTF</strong>, a cyberpunk CTF where you play as a rogue citizen trying to take down NEXUS — a sentient AI built in secret by Do Good Industries, set in a post-AI apocalypse.</p>
       <p>Track the corporation. Infiltrate the HQ. Evade the watchers. Find the kill switch. Shut it all down... or die trying.</p>
     </div>
 
@@ -109,9 +109,13 @@
     </div>
 
     <div class="section">
-      <p><strong>This is just the beginning....
-      
+      <p><strong>This is just the beginning...</strong><br>
+      Part II: <em>THE SHATTERED SIGNAL</em> is coming soon.</p>
+    </div>
   </main>
 
   <footer>
     &copy; 2025 GHOSTSTRATS CTF // Designed by Notorious Squirrel
+  </footer>
+</body>
+</html>
