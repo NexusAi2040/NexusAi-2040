@@ -170,16 +170,17 @@
 
     </li>
 
-    <li>
-      <strong>Stage 2: ENTRY PROTOCOL</strong><br>
-      Clone badges and bypass smart locks to breach the facility.<br>
-      <label for="access2">Access Code:</label>
-      <input type="password" id="access2" placeholder="********">
-      <button onclick="checkCode('access2', 'link2')">Submit</button>
-      <div id="link2" style="display:none; margin-top:10px;">
-        <a href="stage3.html" target="_blank">Access Granted – Proceed to Stage 3</a>
-      </div>
+   <li>
+  <strong>Stage 2: ENTRY PROTOCOL</strong><br>
+  Clone badges and bypass smart locks to breach the facility.<br>
+  <label for="access2">Access Code:</label>
+  <input type="password" id="access2" placeholder="********">
+  <button onclick="checkCode('access2', 'link2', '1793', 'stage3.html')">Submit</button>
+  <div id="link2" style="display:none; margin-top:10px;">
+    <a id="stage2link" href="" target="_blank">Access Granted – Proceed to Stage 3</a>
+  </div>
     </li>
+
 
     <li>
       <strong>Stage 3: SHADOWDANCE</strong><br>
@@ -231,6 +232,7 @@
     }
   }
 </script>
+
 
 
 
