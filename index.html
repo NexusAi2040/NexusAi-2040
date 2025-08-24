@@ -130,15 +130,22 @@
     </form>
   </div>
 
-  <header>
+ <header>
   <h1>GHOSTSTRATS // NOTORIOUS SQUIRREL</h1>
   <p><em>The lights didn’t go out. They were taken.</em></p>
+  
+  <button class="start-button" onclick="revealBase64()">▶ Start Challenge</button>
 
-  <div class="start-button" style="word-break: break-all;">
-    ▶ Start Challenge Code:<br>
-    <code>aHR0cHM6Ly93d3cuZ29vZ2xlLmNvbS9tYXBzL2QvdS8xL2VkaXQ/bWlkPTFwalBMVnZnSnZCdm1xeFdJMFlkTTlBaHVBQlJyTDNjJnVzcD1zaGFyaW5n</code>
+  <div id="base64box" style="display: none; margin-top: 1rem; padding: 1rem; background-color: rgba(0,0,0,0.7); color: #ccff00; border: 1px solid #cc00ff; border-radius: 8px; word-break: break-all;">
+    aHR0cHM6Ly93d3cuZ29vZ2xlLmNvbS9tYXBzL2QvdS8xL2VkaXQ/bWlkPTFwalBMVnZnSnZCdm1xeFdJMFlkTTlBaHVBQlJyTDNjJnVzcD1zaGFyaW5n
   </div>
 </header>
+
+<script>
+  function revealBase64() {
+    document.getElementById('base64box').style.display = 'block';
+  }
+</script>
 
 
   </header>
