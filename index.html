@@ -220,20 +220,23 @@
   </ol>
 </div>
 <script>
-  function checkKillSwitch() {
-    const input = document.getElementById('accesscode').value.trim();
-    const expected = atob('MTc5Mw=='); // Base64 for "1793"
+  function checkObfuscatedCode(inputId, linkContainerId, linkAnchorId, base64Code, fileLink) {
+    const userInput = document.getElementById(inputId).value.trim();
+    const expectedCode = atob(base64Code); // Decode the correct password
+    const container = document.getElementById(linkContainerId);
+    const anchor = document.getElementById(linkAnchorId);
 
-    if (input === expected) {
-      document.getElementById('killswitch-link').style.display = 'block';
-      document.getElementById('accesscode').style.border = '2px solid #00ff00';
+    if (userInput === expectedCode) {
+      anchor.href = fileLink;
+      container.style.display = 'block';
+      document.getElementById(inputId).style.border = '2px solid #00ff00';
     } else {
-      document.getElementById('killswitch-link').style.display = 'none';
-      document.getElementById('accesscode').style.border = '2px solid red';
+      container.style.display = 'none';
+      document.getElementById(inputId).style.border = '2px solid red';
     }
-    return false; // Prevent form submission
   }
 </script>
+
 
 
 
