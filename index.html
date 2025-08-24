@@ -156,7 +156,7 @@
       <p>Track the corporation. Infiltrate the HQ. Evade the watchers. Find the kill switch. Shut it all down... or die trying.</p>
     </div>
 
-  <li>
+ <li>
   <strong>Stage 1: SIGNAL IN THE STATIC</strong><br>
   Use OSINT to locate Do Good Industries HQ via Instagram clues.<br>
   <label for="access1">Access Code:</label>
@@ -166,6 +166,7 @@
     <a id="stage1link" href="" target="_blank">Access Granted – View File</a>
   </div>
 </li>
+
 
     </li>
 
@@ -218,7 +219,7 @@
   function checkCode(inputId, linkId, expectedCode, fileLink) {
     const input = document.getElementById(inputId);
     const linkBox = document.getElementById(linkId);
-    const linkTag = document.getElementById("stage1link");
+    const linkTag = linkBox.querySelector('a');
 
     if (input.value === expectedCode) {
       linkTag.href = fileLink;
@@ -231,21 +232,6 @@
   }
 </script>
 
-<script>
-  function checkCode(inputId, linkId) {
-    const input = document.getElementById(inputId);
-    const link = document.getElementById(linkId);
-    const correctCode = '1234'; // Set to correct code per stage later
-
-    if (input.value === correctCode) {
-      link.style.display = 'block';
-      input.style.border = '2px solid #00ff00';
-    } else {
-      input.style.border = '2px solid red';
-      link.style.display = 'none';
-    }
-  }
-</script>
 
 
     <div class="section">
