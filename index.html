@@ -124,11 +124,15 @@
 <body>
   <div class="terminal-login">
     <strong>🔐 KILL SWITCH</strong>
-    <form>
+    <form onsubmit="return checkKillSwitch()">
       <label for="accesscode">Access Code:</label>
       <input type="password" id="accesscode" name="accesscode" placeholder="********">
     </form>
+    <div id="killswitch-link" style="display:none; margin-top:10px;">
+      <a href="silence-over-the-airways.mp4" target="_blank" style="color:#00f0ff;">🗝️ Access Granted – Play File</a>
+    </div>
   </div>
+
 
  <header>
   <h1>GHOSTSTRATS // NOTORIOUS SQUIRREL</h1>
@@ -215,30 +219,21 @@
   </ol>
 </div>
 <script>
-  function decodeBase64(str) {
-    try {
-      return atob(str);
-    } catch (e) {
-      return '';
-    }
-  }
+  function checkKillSwitch() {
+    const input = document.getElementById('accesscode').value.trim();
+    const expected = atob('MTc5Mw=='); // base64 for "1793"
 
-  function checkObfuscatedCode(inputId, linkBoxId, anchorId, obfuscatedCode, linkTarget) {
-    const userInput = document.getElementById(inputId).value.trim();
-    const expected = decodeBase64(obfuscatedCode);
-    const linkBox = document.getElementById(linkBoxId);
-    const link = document.getElementById(anchorId);
-
-    if (userInput === expected) {
-      link.href = linkTarget;
-      linkBox.style.display = 'block';
-      document.getElementById(inputId).style.border = '2px solid #00ff00';
+    if (input === expected) {
+      document.getElementById('killswitch-link').style.display = 'block';
+      document.getElementById('accesscode').style.border = '2px solid #00ff00';
     } else {
-      linkBox.style.display = 'none';
-      document.getElementById(inputId).style.border = '2px solid red';
+      document.getElementById('killswitch-link').style.display = 'none';
+      document.getElementById('accesscode').style.border = '2px solid red';
     }
+    return false; // Prevent form submit
   }
 </script>
+
 
 
 
