@@ -88,6 +88,9 @@
         <li><strong>Stage 3: SHADOWDANCE</strong><br>Evade cameras, drones, and Sentinels using stealth logic.</li>
         <li><strong>Stage 4: THE ROOM WITH NO NAME</strong><br>Decrypt and solve puzzles to retrieve the kill switch.</li>
         <li><strong>Stage 5: CASCADE FAILURE</strong><br>Attempt the shutdown — and watch it fail. The AI is ready.</li>
+
+        
+        <li><strong>                                    START HERE</li>
       </ol>
     </div>
 
