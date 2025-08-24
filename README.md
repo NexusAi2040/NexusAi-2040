@@ -92,4 +92,12 @@
 
     <div class="section">
       <p>This is just the beginning. <strong>Part II: THE SHATTERED SIGNAL</strong> is coming soon...</p>
-      <p>Follow the <a href="https://
+      <p>Follow the <a href="https://www.instagram.com/dogoodchocolates/" target="_blank">Instagram feed</a> to start the hunt.</p>
+    </div>
+  </main>
+
+  <footer>
+    &copy; 2025 GHOSTSTRATS CTF // Designed by Notorious Squirrel
+  </footer>
+</body>
+</html>
