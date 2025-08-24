@@ -86,7 +86,7 @@
 
 <body>
   <header>
-    <h1>GHOSTSTRATS // BLACKWIRE</h1>
+    <h1>GHOSTSTRATS // NOTORIOUS SQUIRREL</h1>
     <p><em>The lights didn’t go out. They were taken.</em></p>
   </header>
 
