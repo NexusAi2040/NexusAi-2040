@@ -161,25 +161,23 @@
   Use OSINT to locate Do Good Industries HQ via Instagram clues.<br>
   <label for="access1">Access Code:</label>
   <input type="password" id="access1" placeholder="********">
-  <button onclick="checkCode('access1', 'link1', '404', 'silence-over-the-airways.mp4')">Submit</button>
+  <button onclick="checkObfuscatedCode('access1', 'link1', 'stage1link', 'NDA0', 'silence-over-the-airways.mp4')">Submit</button>
   <div id="link1" style="display:none; margin-top:10px;">
     <a id="stage1link" href="" target="_blank">Access Granted – View File</a>
   </div>
 </li>
 
-
-    </li>
-
-   <li>
+<li>
   <strong>Stage 2: ENTRY PROTOCOL</strong><br>
   Clone badges and bypass smart locks to breach the facility.<br>
   <label for="access2">Access Code:</label>
   <input type="password" id="access2" placeholder="********">
-  <button onclick="checkCode('access2', 'link2', '1793', 'stage3.html')">Submit</button>
+  <button onclick="checkObfuscatedCode('access2', 'link2', 'stage2link', 'MTc5Mw==', 'stage3.html')">Submit</button>
   <div id="link2" style="display:none; margin-top:10px;">
     <a id="stage2link" href="" target="_blank">Access Granted – Proceed to Stage 3</a>
   </div>
-    </li>
+</li>
+
 
 
     <li>
@@ -217,21 +215,31 @@
   </ol>
 </div>
 <script>
-  function checkCode(inputId, linkId, expectedCode, fileLink) {
-    const input = document.getElementById(inputId);
-    const linkBox = document.getElementById(linkId);
-    const linkTag = linkBox.querySelector('a');
+  function decodeBase64(str) {
+    try {
+      return atob(str);
+    } catch (e) {
+      return '';
+    }
+  }
 
-    if (input.value === expectedCode) {
-      linkTag.href = fileLink;
+  function checkObfuscatedCode(inputId, linkBoxId, anchorId, obfuscatedCode, linkTarget) {
+    const userInput = document.getElementById(inputId).value.trim();
+    const expected = decodeBase64(obfuscatedCode);
+    const linkBox = document.getElementById(linkBoxId);
+    const link = document.getElementById(anchorId);
+
+    if (userInput === expected) {
+      link.href = linkTarget;
       linkBox.style.display = 'block';
-      input.style.border = '2px solid #00ff00';
+      document.getElementById(inputId).style.border = '2px solid #00ff00';
     } else {
-      input.style.border = '2px solid red';
       linkBox.style.display = 'none';
+      document.getElementById(inputId).style.border = '2px solid red';
     }
   }
 </script>
+
 
 
 
