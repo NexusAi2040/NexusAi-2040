@@ -123,13 +123,15 @@
 
 <div class="terminal-login">
   <strong>🔐 KILL SWITCH</strong>
-  <label for="accesscode">Access Code:</label>
-  <input type="password" id="accesscode" name="accesscode" placeholder="********">
-  <button onclick="checkKillSwitch()">Submit</button>
+  <form onsubmit="return checkKillSwitch()">
+    <label for="accesscode">Access Code:</label>
+    <input type="password" id="accesscode" name="accesscode" placeholder="********">
+  </form>
   <div id="killswitch-link" style="display:none; margin-top:10px;">
     <a href="endofnexus.mp4" target="_blank" style="color:#00f0ff;">🗝️ Access Granted – Play File</a>
   </div>
 </div>
+
 
 
 
@@ -167,7 +169,7 @@
   <input type="password" id="access1" placeholder="********">
   <button onclick="checkObfuscatedCode('access1', 'link1', 'stage1link', 'NDA0', 'silence-over-the-airways.mp4')">Submit</button>
   <div id="link1" style="display:none; margin-top:10px;">
-    <a id="stage1link" href="" target="_blank">Access Granted – View File</a>
+    <a id="stage1link" href="#" target="_blank">Access Granted – View File</a>
   </div>
 </li>
 
@@ -178,9 +180,10 @@
   <input type="password" id="access2" placeholder="********">
   <button onclick="checkObfuscatedCode('access2', 'link2', 'stage2link', 'MTc5Mw==', 'stage3.html')">Submit</button>
   <div id="link2" style="display:none; margin-top:10px;">
-    <a id="stage2link" href="" target="_blank">Access Granted – Proceed to Stage 3</a>
+    <a id="stage2link" href="#" target="_blank">Access Granted – Proceed to Stage 3</a>
   </div>
 </li>
+
 
 
 
@@ -219,23 +222,25 @@
   </ol>
 </div>
 <script>
-  function checkKillSwitch() {
-    const input = document.getElementById('accesscode').value.trim();
-    const correct = atob('MTc5Mw=='); // "1793"
-    const link = document.getElementById('killswitch-link');
+  function checkObfuscatedCode(inputId, containerId, linkId, encodedCode, targetLink) {
+    const input = document.getElementById(inputId);
+    const container = document.getElementById(containerId);
+    const link = document.getElementById(linkId);
+    const decoded = atob(encodedCode);
 
-    if (input === correct) {
-      link.style.display = 'block';
-      document.getElementById('accesscode').style.border = '2px solid #00ff00';
+    if (input.value.trim() === decoded) {
+      container.style.display = 'block';
+      link.href = targetLink;
+      input.style.border = '2px solid #00ff00';
     } else {
-      link.style.display = 'none';
-      document.getElementById('accesscode').style.border = '2px solid red';
+      container.style.display = 'none';
+      input.style.border = '2px solid red';
     }
   }
 </script>
 
-</script>
 
+</script>
 
 
 
