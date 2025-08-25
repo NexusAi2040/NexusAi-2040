@@ -121,17 +121,16 @@
   </style>
 </head>
 
-<body>
-  <div class="terminal-login">
-    <strong>🔐 KILL SWITCH</strong>
-    <form onsubmit="return checkKillSwitch()">
-      <label for="accesscode">Access Code:</label>
-      <input type="password" id="accesscode" name="accesscode" placeholder="********">
-    </form>
-    <div id="killswitch-link" style="display:none; margin-top:10px;">
-      <a href="endofnexus.mp4" target="_blank" style="color:#00f0ff;">🗝️ Access Granted – Play File</a>
-    </div>
+<div class="terminal-login">
+  <strong>🔐 KILL SWITCH</strong>
+  <label for="accesscode">Access Code:</label>
+  <input type="password" id="accesscode" name="accesscode" placeholder="********">
+  <button onclick="checkKillSwitch()">Submit</button>
+  <div id="killswitch-link" style="display:none; margin-top:10px;">
+    <a href="endofnexus.mp4" target="_blank" style="color:#00f0ff;">🗝️ Access Granted – Play File</a>
   </div>
+</div>
+
 
 
 
@@ -220,21 +219,21 @@
   </ol>
 </div>
 <script>
-  function checkObfuscatedCode(inputId, linkContainerId, linkAnchorId, base64Code, fileLink) {
-    const userInput = document.getElementById(inputId).value.trim();
-    const expectedCode = atob(base64Code); // Decode the correct password
-    const container = document.getElementById(linkContainerId);
-    const anchor = document.getElementById(linkAnchorId);
+  function checkKillSwitch() {
+    const input = document.getElementById('accesscode').value.trim();
+    const correct = atob('MTc5Mw=='); // "1793"
+    const link = document.getElementById('killswitch-link');
 
-    if (userInput === expectedCode) {
-      anchor.href = fileLink;
-      container.style.display = 'block';
-      document.getElementById(inputId).style.border = '2px solid #00ff00';
+    if (input === correct) {
+      link.style.display = 'block';
+      document.getElementById('accesscode').style.border = '2px solid #00ff00';
     } else {
-      container.style.display = 'none';
-      document.getElementById(inputId).style.border = '2px solid red';
+      link.style.display = 'none';
+      document.getElementById('accesscode').style.border = '2px solid red';
     }
   }
+</script>
+
 </script>
 
 
