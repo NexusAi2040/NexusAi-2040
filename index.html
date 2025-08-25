@@ -222,25 +222,26 @@
   </ol>
 </div>
 <script>
-  function checkObfuscatedCode(inputId, containerId, linkId, encodedCode, targetLink) {
-    const input = document.getElementById(inputId);
-    const container = document.getElementById(containerId);
-    const link = document.getElementById(linkId);
-    const decoded = atob(encodedCode);
+  function checkKillSwitch() {
+    const input = document.getElementById('accesscode');
+    const code = input.value.trim();
+    const correct = atob('MTc5Mw=='); // "1793"
 
-    if (input.value.trim() === decoded) {
-      container.style.display = 'block';
-      link.href = targetLink;
+    if (code === correct) {
+      document.getElementById('killswitch-link').style.display = 'block';
       input.style.border = '2px solid #00ff00';
     } else {
-      container.style.display = 'none';
+      document.getElementById('killswitch-link').style.display = 'none';
       input.style.border = '2px solid red';
     }
+
+    return false; // Prevent form submission
   }
 </script>
 
 
-</script>
+
+
 
 
 
