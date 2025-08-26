@@ -78,7 +78,7 @@
 <body>
   <div id="overlay">PRESS SPACE TO START</div>
   <div id="countdown">3</div>
-  <div id="secret-msg">secret</div>
+  <div id="secret-msg">Well Done CHERRY!! secret message to be displayed here</div>
   <button id="restart-btn" onclick="location.reload()">RESTART GAME</button>
   <canvas id="gameCanvas" width="560" height="620"></canvas>
   <script>
@@ -133,7 +133,7 @@
     let squirrel = { x: 1, y: 1, dx: 0, dy: 0 };
     let score = 0;
 
-    const guards = Array.from({ length: 6 }, () => {
+    const guards = Array.from({ length: 5 }, () => {
       let gx, gy;
       do {
         gx = Math.floor(Math.random() * maze[0].length);
@@ -224,7 +224,7 @@
 
     function openGate() {
       gateOpen = true;
-      setTimeout(() => { gateOpen = false; }, 20000);
+      setTimeout(() => { gateOpen = false; }, 25000);
     }
 
     function gameLoop(timestamp) {
