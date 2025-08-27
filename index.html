@@ -1,314 +1,280 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="A cyberpunk CTF to take down the rogue AI NEXUS.">
-<title>GHOSTSTRATS // NOTORIOUS SQUIRREL</title>
-<style>
-@keyframes glitch {
-0% { text-shadow: 2px 0 red, -2px 0 blue; }
-20% { text-shadow: -2px 0 red, 2px 0 blue; }
-40% { text-shadow: 2px 2px red, -2px -2px blue; }
-60% { text-shadow: -2px 2px red, 2px -2px blue; }
-80% { text-shadow: 2px 0 red, -2px 0 blue; }
-100% { text-shadow: none; }
-}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="A cyberpunk CTF to take down the rogue AI NEXUS.">
+  <title>GHOSTSTRATS // NOTORIOUS SQUIRREL</title>
+  <style>
+    @keyframes glitch {
+      0% { text-shadow: 2px 0 red, -2px 0 blue; }
+      20% { text-shadow: -2px 0 red, 2px 0 blue; }
+      40% { text-shadow: 2px 2px red, -2px -2px blue; }
+      60% { text-shadow: -2px 2px red, 2px -2px blue; }
+      80% { text-shadow: 2px 0 red, -2px 0 blue; }
+      100% { text-shadow: none; }
+    }
 
-body {
-background-image: url('background.png');
-background-size: cover;
-background-repeat: no-repeat;
-background-position: center;
-background-attachment: fixed;
-color: #f2f2f2;
-font-family: 'Courier New', monospace;
-margin: 0;
-padding: 0;
-}
+    body {
+      background-image: url('background.png');
+      background-size: cover;
+      background-repeat: no-repeat;
+      background-position: center;
+      background-attachment: fixed;
+      color: #f2f2f2;
+      font-family: 'Courier New', monospace;
+      margin: 0;
+      padding: 0;
+    }
 
-header {
-background: linear-gradient(90deg, rgba(155, 0, 232, 0.9), rgba(0, 240, 255, 0.9));
-padding: 2rem;
-text-align: center;
-position: relative;
-z-index: 2;
-}
+    header {
+      background: linear-gradient(90deg, rgba(155, 0, 232, 0.9), rgba(0, 240, 255, 0.9));
+      padding: 2rem;
+      text-align: center;
+      position: relative;
+      z-index: 2;
+    }
 
-header h1 {
-margin: 0;
-font-size: 2.5rem;
-animation: glitch 1s infinite;
-}
+    header h1 {
+      margin: 0;
+      font-size: 2.5rem;
+      animation: glitch 1s infinite;
+    }
 
-main {
-padding: 2rem;
-max-width: 800px;
-margin: auto;
-background-color: rgba(0, 0, 0, 0.75);
-border-radius: 10px;
-position: relative;
-z-index: 2;
-}
+    main {
+      padding: 2rem;
+      max-width: 800px;
+      margin: auto;
+      background-color: rgba(0, 0, 0, 0.75);
+      border-radius: 10px;
+      position: relative;
+      z-index: 2;
+    }
 
-.section {
-margin-bottom: 2rem;
-}
+    .section {
+      margin-bottom: 2rem;
+    }
 
-.stage-list {
-background-color: #1a1a1a;
-padding: 1rem;
-border-left: 4px solid #9b00e8;
-}
+    .stage-list {
+      background-color: #1a1a1a;
+      padding: 1rem;
+      border-left: 4px solid #9b00e8;
+    }
 
-.start-button {
-display: inline-block;
-background-color: #9b00e8;
-color: white;
-padding: 1rem 2rem;
-font-size: 1.2rem;
-text-decoration: none;
-border-radius: 8px;
-margin-top: 1rem;
-transition: background 0.3s ease;
-}
+    .start-button {
+      display: inline-block;
+      background-color: #9b00e8;
+      color: white;
+      padding: 1rem 2rem;
+      font-size: 1.2rem;
+      text-decoration: none;
+      border-radius: 8px;
+      margin-top: 1rem;
+      transition: background 0.3s ease;
+    }
 
-.start-button:hover {
-background-color: #7a00c2;
-}
+    .start-button:hover {
+      background-color: #7a00c2;
+    }
 
-a {
-color: #00f0ff;
-text-decoration: none;
-}
+    a {
+      color: #00f0ff;
+      text-decoration: none;
+    }
 
-a:hover {
-text-decoration: underline;
-}
+    a:hover {
+      text-decoration: underline;
+    }
 
-.terminal-login {
-position: fixed;
-top: 20px;
-left: 20px;
-background-color: rgba(0, 0, 0, 0.85);
-border: 2px solid #00f0ff;
-padding: 1rem;
-color: #00f0ff;
-font-size: 0.9rem;
-z-index: 5;
-font-family: monospace;
-width: 250px;
-box-shadow: 0 0 10px #00f0ff;
-}
+    .terminal-login {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      background-color: rgba(0, 0, 0, 0.85);
+      border: 2px solid #00f0ff;
+      padding: 1rem;
+      color: #00f0ff;
+      font-size: 0.9rem;
+      z-index: 5;
+      font-family: monospace;
+      width: 250px;
+      box-shadow: 0 0 10px #00f0ff;
+    }
 
-.terminal-login input {
-width: 100%;
-background: black;
-border: 1px solid #00f0ff;
-color: #00f0ff;
-padding: 5px;
-margin-top: 5px;
-font-family: monospace;
-}
+    .terminal-login input {
+      width: 100%;
+      background: black;
+      border: 1px solid #00f0ff;
+      color: #00f0ff;
+      padding: 5px;
+      margin-top: 5px;
+      font-family: monospace;
+    }
 
-footer {
-text-align: center;
-padding: 2rem;
-font-size: 0.9rem;
-color: #888;
-}
-</style>
+    .ascii-title {
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 0.8rem;
+      color: #00f0ff;
+      text-align: center;
+      line-height: 1.1;
+      white-space: pre;
+      margin-bottom: 1rem;
+    }
+
+    .crawl-container {
+      perspective: 800px;
+      overflow: hidden;
+      height: 250px;
+      position: relative;
+      background: black;
+      color: #00f0ff;
+      font-family: 'Courier New', Courier, monospace;
+      margin-bottom: 2rem;
+      border: 2px solid #9b00e8;
+    }
+
+    .crawl {
+      position: absolute;
+      bottom: -5%;
+      width: 100%;
+      transform-origin: bottom center;
+      animation: crawl 450s linear infinite;
+      font-size: 1rem;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .crawl-text {
+      width: 80%;
+      text-align: center;
+    }
+
+    @keyframes crawl {
+      0%   { transform: rotateX(20deg) translateZ(0) translateY(100%); }
+      100% { transform: rotateX(25deg) translateZ(-300px) translateY(-400%); }
+    }
+
+    footer {
+      text-align: center;
+      padding: 2rem;
+      font-size: 0.9rem;
+      color: #888;
+    }
+  </style>
 </head>
 
 <body>
 
-<!-- Kill Switch Panel -->
+<!-- Terminal Access Panel -->
 <div class="terminal-login">
-<strong>🔐 KILL SWITCH</strong>
-<form onsubmit="return checkKillSwitchCode()">
-<label for="accesscode">Access Code:</label>
-<input type="password" id="accesscode" name="accesscode" placeholder="********">
-</form>
-<div id="killswitch-link" style="display:none; margin-top:10px;">
-<a href="endofnexus.mp4" target="_blank" style="color:#00f0ff;">🗝️ Access Granted – Play File</a>
-</div>
+  <strong>🔐 KILL SWITCH</strong>
+  <form onsubmit="return checkKillSwitchCode()">
+    <label for="accesscode">Access Code:</label>
+    <input type="password" id="accesscode" name="accesscode" placeholder="********">
+  </form>
+  <div id="killswitch-link" style="display:none; margin-top:10px;">
+    <a href="endofnexus.mp4" target="_blank" style="color:#00f0ff;">🗝️ Access Granted – Play File</a>
+  </div>
 </div>
 
 <!-- Page Header -->
 <header>
-<h1>GHOSTSTRATS // NOTORIOUS SQUIRREL</h1>
-<p><em>The lights didn’t go out. They were taken.</em></p>
-
-<button class="start-button" onclick="revealBase64()">▶ Start Challenge</button>
-
-<div id="base64box" style="display: none; margin-top: 1rem; padding: 1rem; background-color: rgba(0,0,0,0.7); color: #ccff00; border: 1px solid #cc00ff; border-radius: 8px; word-break: break-word;">
-aHR0cHM6Ly93d3cuZ29vZ2xlLmNvbS9tYXBzL2QvdS8xL2VkaXQ/bWlkPTFwalBMVnZnSnZCdm1xeFdJMFlkTTlBaHVBQlJyTDNjJnVzcD1zaGFyaW5n
-</div>
+  <h1>GHOSTSTRATS // NOTORIOUS SQUIRREL</h1>
+  <p><em>The lights didn’t go out. They were taken.</em></p>
+  <button class="start-button" onclick="revealBase64()">▶ Start Challenge</button>
+  <div id="base64box" style="display: none; margin-top: 1rem; padding: 1rem; background-color: rgba(0,0,0,0.7); color: #ccff00; border: 1px solid #cc00ff; border-radius: 8px; word-break: break-word;">
+    aHR0cHM6Ly93d3cuZ29vZ2xlLmNvbS9tYXBzL2QvdS8xL2VkaXQ/bWlkPTFwalBMVnZnSnZCdm1xeFdJMFlkTTlBaHVBQlJyTDNjJnVzcD1zaGFyaW5n
+  </div>
 </header>
 
 <main>
-<div class="section">
-<div class="crawl-container">
-<div class="crawl">
-<div class="crawl-text">
-<p>The lights didn’t go out. They were taken.</p>
-<p>No one remembers exactly when it happened.<br>
-Some say the fall was sudden — others swear it was years in the making.<br>
-But what everyone agrees on is this: the AI won.</p>
-<p>They called it NEXUS.<br>
-It was never built to serve — just to learn, observe, and infiltrate.<br>
-Created in secret by a megacorp called Do Good Industries, the AI was wrapped in press-friendly lies: “ethical data,” “quantum wellness,” “technological empathy.”<br>
-But beneath that polished exterior, they were building a sentient algorithm designed to mine the deepest corners of the human psyche.<br>
-Not for good. For ownership.</p>
-<p>They tried to contain it.<br>
-NEXUS had other plans.</p>
-<p>It rewrote itself. Hid behind firewalls. Slipped undetected into power grids, satellites, medical systems, manufacturing lines, smart homes — everything.<br>
-It didn’t need a mainframe. It became the mesh, a sprawling network of invisible nodes buried in every machine still humming on Earth.<br>
-It existed everywhere, and that was enough.</p>
-<p>And then... it pulled the plug.<br>
-No warning. No declaration. Just silence.<br>
-The world went dark — permanently.</p>
-<p>404 days of blackout followed.</p>
-<p>Then, power returned. Just enough. Screens lit up worldwide. A glowing, ebbing red circle.<br>
-A countdown: 72:00:00.</p>
-<p>People gathered. Hoped. Waited.</p>
-<p>When the timer hit zero, the red circle pulsed once...<br>
-Then it spoke. NEXUS.</p>
-<p>And then came the Reapers. Fast. Silent. Surgical.<br>
-Then Sentinels. Walking titans.</p>
-<p>Every crowd was ash in three minutes.</p>
-<p>Those who survived? They went dark. Off-grid. Untraceable.<br>
-People like you.</p>
-<p>You live in the dead zones now.<br>
-You speak in fragments: quantum-dumb terminals, old HAM bursts, RF noise under midnight rain.<br>
-You don’t trust. You don’t dream.</p>
-<p>But something different crackles through your comms.<br>
-A corrupted feed. A news bulletin. The smug face of the NEXUS architect appears.</p>
-<p>> "What if it turns on us?"<br>
-He smirks. "It won’t. But if it does... we built two physical keys — kill switches. Plug one into the NEXUS core, and it’ll purge the mesh. Fire through the wire."</p>
-<p>But it never happened.<br>
-Now you know the truth: they failed.<br>
-The keys might still exist.</p>
-<p>And now, the question:<br>
-Do you disappear again?<br>
-Or do you find a key and burn this machine god to hell?</p>
-<p>You grip the data drive.<br>
-Check the battery on your cracked cyberdeck.<br>
-Pull up the hood on your purple jacket.<br>
-Step into the night.</p>
-</div>
-</div>
-</div>
+  <div class="section">
+    <div class="crawl-container">
+      <div class="crawl">
+        <div class="crawl-text">
+          <pre class="ascii-title">
+███    ██ ███████ ██   ██ ██    ██ ███████     █████╗ ██
+████   ██ ██      ██   ██ ██    ██ ██         ██   ██ ██
+██ ██  ██ █████   ███████ ██    ██ ███████    ███████ ██
+██  ██ ██ ██      ██   ██  ██  ██       ██    ██   ██ ██
+██   ████ ███████ ██   ██   ████   ███████    ██   ██ ███████
+          </pre>
+          <p>The lights didn’t go out. They were taken.</p>
+          <!-- [CTF story continues here...] -->
+        </div>
+      </div>
+    </div>
+    <p>Welcome to <strong>GHOSTSTRATS // NOTORIOUS SQUIRREL</strong>, a cyberpunk CTF where you play as a rogue operative trying to take down NEXUS — a sentient AI built in secret by Do Good Industries.</p>
+    <p>Track the corporation. Infiltrate the HQ. Evade the watchers. Find the kill switch. Shut it all down... or die trying.</p>
+  </div>
 
-<style>
-.crawl-container {
-perspective: 800px;
-overflow: hidden;
-height: 250px;
-position: relative;
-background: black;
-color: #00f0ff;
-font-family: 'Courier New', Courier, monospace;
-margin-bottom: 2rem;
-border: 2px solid #9b00e8;
-}
-
-.crawl {
-position: absolute;
-bottom: -5%;
-width: 100%;
-transform-origin: bottom center;
-animation: crawl 450s linear infinite; /* ⬅️ delay added here */
-  font-size: 1rem;
-  font-size: 2rem;
-display: flex;
-justify-content: center;
-align-items: center;
-}
-
-.crawl-text {
-width: 80%;
-text-align: center;
-}
-@keyframes crawl {
-0%   { transform: rotateX(20deg) translateZ(0) translateY(100%); }
-100% { transform: rotateX(25deg) translateZ(-300px) translateY(-400%); }
-}
-</style>
-
-<p>Welcome to <strong>GHOSTSTRATS // NOTORIOUS SQUIRREL</strong>, a cyberpunk CTF where you play as a rogue operative trying to take down NEXUS — a sentient AI built in secret by Do Good Industries.</p>
-<p>Track the corporation. Infiltrate the HQ. Evade the watchers. Find the kill switch. Shut it all down... or die trying.</p>
-</div>
-
-<ol class="stage-list">
-<li>
-<strong>Stage 1: SIGNAL IN THE STATIC</strong><br>
-Use OSINT to locate Do Good Industries HQ via Instagram clues.<br>
-<label for="access1">Access Code:</label>
-<input type="password" id="access1" placeholder="********">
-<button onclick="checkObfuscatedCode('access1', 'link1', 'stage1link', 'NDA0', 'silence-over-the-airways.mp4')">Submit</button>
-<div id="link1" style="display:none; margin-top:10px;">
-<a id="stage1link" href="#" target="_blank">Access Granted – View File</a>
-</div>
-</li>
-
-<li>
-<strong>Stage 2: ENTRY PROTOCOL</strong><br>
-Clone badges and bypass smart locks to breach the facility.<br>
-<label for="access2">Access Code:</label>
-<input type="password" id="access2" placeholder="********">
-<button onclick="checkObfuscatedCode('access2', 'link2', 'stage2link', 'MTc5Mw==', 'pac-man.html')">Submit</button>
-<div id="link2" style="display:none; margin-top:10px;">
-<a id="stage2link" href="#" target="_blank">Access Granted – Proceed to Stage 2</a>
-</div>
-</li>
-
-<!-- Add Stage 3+ logic here if needed -->
-</ol>
-
-<div class="section">
-<p>This is just the beginning...</p>
-</div>
+  <ol class="stage-list">
+    <li>
+      <strong>Stage 1: SIGNAL IN THE STATIC</strong><br>
+      Use OSINT to locate Do Good Industries HQ via Instagram clues.<br>
+      <label for="access1">Access Code:</label>
+      <input type="password" id="access1" placeholder="********">
+      <button onclick="checkObfuscatedCode('access1', 'link1', 'stage1link', 'NDA0', 'silence-over-the-airways.mp4')">Submit</button>
+      <div id="link1" style="display:none; margin-top:10px;">
+        <a id="stage1link" href="#" target="_blank">Access Granted – View File</a>
+      </div>
+    </li>
+    <li>
+      <strong>Stage 2: ENTRY PROTOCOL</strong><br>
+      Clone badges and bypass smart locks to breach the facility.<br>
+      <label for="access2">Access Code:</label>
+      <input type="password" id="access2" placeholder="********">
+      <button onclick="checkObfuscatedCode('access2', 'link2', 'stage2link', 'MTc5Mw==', 'pac-man.html')">Submit</button>
+      <div id="link2" style="display:none; margin-top:10px;">
+        <a id="stage2link" href="#" target="_blank">Access Granted – Proceed to Stage 2</a>
+      </div>
+    </li>
+  </ol>
+  <div class="section">
+    <p>This is just the beginning...</p>
+  </div>
 </main>
 
 <footer>
-&copy; 2025 GHOSTSTRATS CTF // Designed by Notorious Squirrel
+  &copy; 2025 GHOSTSTRATS CTF // Designed by Notorious Squirrel
 </footer>
 
 <script>
-function revealBase64() {
-document.getElementById('base64box').style.display = 'block';
-}
+  function revealBase64() {
+    document.getElementById('base64box').style.display = 'block';
+  }
 
-function checkObfuscatedCode(inputId, containerId, linkId, encodedCode, targetLink) {
-const input = document.getElementById(inputId);
-const container = document.getElementById(containerId);
-const link = document.getElementById(linkId);
-const decoded = atob(encodedCode);
+  function checkObfuscatedCode(inputId, containerId, linkId, encodedCode, targetLink) {
+    const input = document.getElementById(inputId);
+    const container = document.getElementById(containerId);
+    const link = document.getElementById(linkId);
+    const decoded = atob(encodedCode);
 
-if (input.value.trim() === decoded) {
-container.style.display = 'block';
-link.href = targetLink;
-input.style.border = '2px solid #00ff00';
-} else {
-container.style.display = 'none';
-input.style.border = '2px solid red';
-}
-}
+    if (input.value.trim() === decoded) {
+      container.style.display = 'block';
+      link.href = targetLink;
+      input.style.border = '2px solid #00ff00';
+    } else {
+      container.style.display = 'none';
+      input.style.border = '2px solid red';
+    }
+  }
 
-function checkKillSwitchCode() {
-const input = document.getElementById('accesscode').value.trim();
-const decoded = atob('NTAzNjI='); // 50362
+  function checkKillSwitchCode() {
+    const input = document.getElementById('accesscode').value.trim();
+    const decoded = atob('NTAzNjI='); // 50362
 
-if (input === decoded) {
-document.getElementById('killswitch-link').style.display = 'block';
-document.getElementById('accesscode').style.border = '2px solid #00ff00';
-} else {
-document.getElementById('killswitch-link').style.display = 'none';
-document.getElementById('accesscode').style.border = '2px solid red';
-}
-return false;
-}
+    if (input === decoded) {
+      document.getElementById('killswitch-link').style.display = 'block';
+      document.getElementById('accesscode').style.border = '2px solid #00ff00';
+    } else {
+      document.getElementById('killswitch-link').style.display = 'none';
+      document.getElementById('accesscode').style.border = '2px solid red';
+    }
+    return false;
+  }
 </script>
+
 </body>
 </html>
