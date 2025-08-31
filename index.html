@@ -181,12 +181,10 @@ Step into the night.
   'use strict';
   const mount = d.querySelector('#stage-mount') || d.body;
 
-  // helpers
   const rev = s => s.split('').reverse().join('');
   const b64rev = s => w.atob(rev(s));                 
   const unrev  = s => rev(s);                          
 
-  // stage data (codes are reversed Base64; files are reversed plain strings)
   const stages = [
     {
       title: 'Stage 1: SIGNAL IN THE STATIC',
