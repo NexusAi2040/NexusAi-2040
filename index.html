@@ -14,7 +14,6 @@
       80% { text-shadow: 2px 0 red, -2px 0 blue; }
       100% { text-shadow: none; }
     }
-
     body {
       background-image: url('background.png');
       background-size: cover;
@@ -26,7 +25,6 @@
       margin: 0;
       padding: 0;
     }
-
     header {
       background: linear-gradient(90deg, rgba(155, 0, 232, 0.9), rgba(0, 240, 255, 0.9));
       padding: 2rem;
@@ -34,133 +32,31 @@
       position: relative;
       z-index: 2;
     }
-
-    header h1 {
-      margin: 0;
-      font-size: 2.5rem;
-      animation: glitch 1s infinite;
-    }
-
+    header h1 { margin: 0; font-size: 2.5rem; animation: glitch 1s infinite; }
     main {
-      padding: 2rem;
-      max-width: 800px;
-      margin: auto;
-      background-color: rgba(0, 0, 0, 0.75);
-      border-radius: 10px;
-      position: relative;
-      z-index: 2;
+      padding: 2rem; max-width: 800px; margin: auto;
+      background-color: rgba(0,0,0,0.75); border-radius: 10px; position: relative; z-index: 2;
     }
-
-    .section {
-      margin-bottom: 2rem;
-    }
-
-    .stage-list {
-      background-color: #1a1a1a;
-      padding: 1rem;
-      border-left: 4px solid #9b00e8;
-    }
-
+    .section { margin-bottom: 2rem; }
+    .stage-list { background-color: #1a1a1a; padding: 1rem; border-left: 4px solid #9b00e8; }
     .start-button {
-      display: inline-block;
-      background-color: #9b00e8;
-      color: white;
-      padding: 1rem 2rem;
-      font-size: 1.2rem;
-      text-decoration: none;
-      border-radius: 8px;
-      margin-top: 1rem;
-      transition: background 0.3s ease;
+      display:inline-block;background-color:#9b00e8;color:#fff;padding:1rem 2rem;font-size:1.2rem;
+      text-decoration:none;border-radius:8px;margin-top:1rem;transition:background .3s ease;
     }
-
-    .start-button:hover {
-      background-color: #7a00c2;
-    }
-
-    a {
-      color: #00f0ff;
-      text-decoration: none;
-    }
-
-    a:hover {
-      text-decoration: underline;
-    }
-
+    .start-button:hover { background-color:#7a00c2; }
+    a { color:#00f0ff; text-decoration:none; } a:hover { text-decoration:underline; }
     .terminal-login {
-      position: fixed;
-      top: 20px;
-      left: 20px;
-      background-color: rgba(0, 0, 0, 0.85);
-      border: 2px solid #00f0ff;
-      padding: 1rem;
-      color: #00f0ff;
-      font-size: 0.9rem;
-      z-index: 5;
-      font-family: monospace;
-      width: 250px;
-      box-shadow: 0 0 10px #00f0ff;
+      position:fixed; top:20px; left:20px; background-color:rgba(0,0,0,.85);
+      border:2px solid #00f0ff; padding:1rem; color:#00f0ff; font-size:.9rem; z-index:5; width:250px;
+      box-shadow:0 0 10px #00f0ff; font-family:monospace;
     }
-
-    .terminal-login input {
-      width: 100%;
-      background: black;
-      border: 1px solid #00f0ff;
-      color: #00f0ff;
-      padding: 5px;
-      margin-top: 5px;
-      font-family: monospace;
-    }
-
-    .ascii-title {
-      font-family: 'Courier New', Courier, monospace;
-      font-size: 0.8rem;
-      color: #00f0ff;
-      text-align: center;
-      line-height: 1.1;
-      white-space: pre;
-      margin-bottom: 1rem;
-    }
-
-    .crawl-container {
-      perspective: 800px;
-      overflow: hidden;
-      height: 250px;
-      position: relative;
-      background: black;
-      color: #00f0ff;
-      font-family: 'Courier New', Courier, monospace;
-      margin-bottom: 2rem;
-      border: 2px solid #9b00e8;
-    }
-
-    .crawl {
-      position: absolute;
-      bottom: 60%;
-      width: 100%;
-      transform-origin: bottom center;
-      animation: crawl 650s linear infinite;
-      font-size: 1.5rem;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-
-    .crawl-text {
-      width: 80%;
-      text-align: center;
-    }
-
-    @keyframes crawl {
-      0%   { transform: rotateX(20deg) translateZ(0) translateY(100%); }
-      100% { transform: rotateX(25deg) translateZ(-300px) translateY(-400%); }
-    }
-
-    footer {
-      text-align: center;
-      padding: 2rem;
-      font-size: 0.9rem;
-      color: #888;
-    }
+    .terminal-login input { width:100%; background:black; border:1px solid #00f0ff; color:#00f0ff; padding:5px; margin-top:5px; }
+    .ascii-title { font-family:'Courier New', Courier, monospace; font-size:.8rem; color:#00f0ff; text-align:center; line-height:1.1; white-space:pre; margin-bottom:1rem; }
+    .crawl-container { perspective:800px; overflow:hidden; height:250px; position:relative; background:black; color:#00f0ff; margin-bottom:2rem; border:2px solid #9b00e8; }
+    .crawl { position:absolute; bottom:60%; width:100%; transform-origin:bottom center; animation:crawl 650s linear infinite; font-size:1.5rem; display:flex; justify-content:center; align-items:center; }
+    .crawl-text { width:80%; text-align:center; }
+    @keyframes crawl { 0%{ transform: rotateX(20deg) translateZ(0) translateY(100%);} 100%{ transform: rotateX(25deg) translateZ(-300px) translateY(-400%);} }
+    footer { text-align:center; padding:2rem; font-size:.9rem; color:#888; }
   </style>
 </head>
 
@@ -183,7 +79,7 @@
   <h1>GHOSTSTRATS // NOTORIOUS SQUIRREL</h1>
   <p><em>The lights didn’t go out. They were taken.</em></p>
   <button class="start-button" onclick="revealBase64()">▶ Start Challenge</button>
-  <div id="base64box" style="display: none; margin-top: 1rem; padding: 1rem; background-color: rgba(0,0,0,0.7); color: #ccff00; border: 1px solid #cc00ff; border-radius: 8px; word-break: break-word;">
+  <div id="base64box" style="display:none;margin-top:1rem;padding:1rem;background-color:rgba(0,0,0,.7);color:#ccff00;border:1px solid #cc00ff;border-radius:8px;word-break:break-word;">
     aHR0cHM6Ly93d3cuZ29vZ2xlLmNvbS9tYXBzL2QvdS8xL2VkaXQ/bWlkPTFwalBMVnZnSnZCdm1xeFdJMFlkTTlBaHVBQlJyTDNjJnVzcD1zaGFyaW5n
   </div>
 </header>
@@ -193,17 +89,17 @@
     <div class="crawl-container">
       <div class="crawl">
         <div class="crawl-text">
-          <pre class="ascii-title">
+<pre class="ascii-title">
  ███    ██ ███████ ██   ██ ██    ██ ███████     █████  ██
 ████   ██ ██      ██   ██ ██    ██ ██         ██   ██ 
  ██ ██  ██ █████     ██    ██    ██ ███████    ███████ ██
  ██  ██ ██ ██      ██   ██  ██  ██       ██    ██   ██ ██
  ██   ████ ███████ ██   ██   ████   ███████    ██   ██ ██
-          </pre>
+</pre>
           <p>The lights didn’t go out. They were taken.</p>
-          No one remembers exactly when it happened.<br>
+           No one remembers exactly when it happened.<br>
 Some say the fall was sudden — others swear it was years in the making.<br>
-But what everyone agrees on is this: the AI won.</p>
+But what everyone agrees on is this: the AI won.
 <p>They called it NEXUS.<br>
 It was never built to serve — just to learn, observe, and infiltrate.<br>
 Created in secret by a megacorp called Do Good Industries, the AI was wrapped in press-friendly lies: “ethical data,” “quantum wellness,” “technological empathy.”<br>
@@ -252,41 +148,10 @@ Step into the night.
     <p>Track the corporation. Infiltrate the HQ. Evade the watchers. Find the kill switch. Shut it all down... or die trying.</p>
   </div>
 
-  <ol class="stage-list">
-    <li>
-      <strong>Stage 1: SIGNAL IN THE STATIC</strong><br>
-      Use OSINT to locate Do Good Industries HQ via Instagram clues.<br>
-      <label for="access1">Access Code:</label>
-      <input type="password" id="access1" placeholder="********">
-      <button onclick="checkObfuscatedCode('access1', 'link1', 'stage1link', 'NDA0', 'silence-over-the-airways.mp4')">Submit</button>
-      <div id="link1" style="display:none; margin-top:10px;">
-        <a id="stage1link" href="#" target="_blank">Access Granted – View File</a>
-      </div>
-    </li>
-    <li>
-      <strong>Stage 2: ENTRY PROTOCOL</strong><br>
-      Clone badges and bypass smart locks to breach the facility.<br>
-      <label for="access2">Access Code:</label>
-      <input type="password" id="access2" placeholder="********">
-      <button onclick="checkObfuscatedCode('access2', 'link2', 'stage2link', 'MTc5Mw==', 'pac-man.html')">Submit</button>
-      <div id="link2" style="display:none; margin-top:10px;">
-        <a id="stage2link" href="#" target="_blank">Access Granted – Proceed to Stage 2</a>
-      </div>
-    </li>
-    <li>
-  <strong>Stage 3: NETWORK BREACH</strong><br>
-  Hijack the signal. Slip past their IDS. Access the relay node.<br>
-  <label for="access3">Access Code:</label>
-  <input type="password" id="access3" placeholder="********">
-  <button onclick="checkObfuscatedCode('access3', 'link3', 'stage3link', 'RmxhZ3s1fQ==', 'hidden.jpg')">Submit</button>
-  <div id="link3" style="display:none; margin-top:10px;">
-    <a id="stage3link" href="#" target="_blank">Access Granted – Proceed to Stage 3</a>
-  </div>
-</li>
-   </ol>
-  <div class="section">
-    <p>This is just the beginning...</p>
-  </div>
+  <!-- Stage list mounts here -->
+  <div id="stage-mount"></div>
+
+  <div class="section"><p>This is just the beginning...</p></div>
 </main>
 
 <footer>
@@ -294,39 +159,124 @@ Step into the night.
 </footer>
 
 <script>
-  function revealBase64() {
-    document.getElementById('base64box').style.display = 'block';
-  }
+  function revealBase64(){ document.getElementById('base64box').style.display='block'; }
 
-  function checkObfuscatedCode(inputId, containerId, linkId, encodedCode, targetLink) {
-    const input = document.getElementById(inputId);
-    const container = document.getElementById(containerId);
-    const link = document.getElementById(linkId);
-    const decoded = atob(encodedCode);
-
-    if (input.value.trim() === decoded) {
-      container.style.display = 'block';
-      link.href = targetLink;
-      input.style.border = '2px solid #00ff00';
-    } else {
-      container.style.display = 'none';
-      input.style.border = '2px solid red';
-    }
-  }
-
-  function checkKillSwitchCode() {
+  function checkKillSwitchCode(){
     const input = document.getElementById('accesscode').value.trim();
     const decoded = atob('NTAzNjI='); // 50362
-
-    if (input === decoded) {
-      document.getElementById('killswitch-link').style.display = 'block';
-      document.getElementById('accesscode').style.border = '2px solid #00ff00';
+    if (input === decoded){
+      document.getElementById('killswitch-link').style.display='block';
+      document.getElementById('accesscode').style.border='2px solid #00ff00';
     } else {
-      document.getElementById('killswitch-link').style.display = 'none';
-      document.getElementById('accesscode').style.border = '2px solid red';
+      document.getElementById('killswitch-link').style.display='none';
+      document.getElementById('accesscode').style.border='2px solid red';
     }
     return false;
   }
+</script>
+
+<!-- Reliable stage injector (obfuscated data; robust runtime build) -->
+<script>
+(function(w,d){
+  'use strict';
+  const mount = d.querySelector('#stage-mount') || d.body;
+
+  // helpers
+  const rev = s => s.split('').reverse().join('');
+  const b64rev = s => w.atob(rev(s));                 // expects reversed Base64
+  const unrev  = s => rev(s);                          // for lightly-obfuscated file names
+
+  // stage data (codes are reversed Base64; files are reversed plain strings)
+  const stages = [
+    {
+      title: 'Stage 1: SIGNAL IN THE STATIC',
+      desc:  'Use OSINT to locate Do Good Industries HQ via Instagram clues.',
+      inputId: 'access1',
+      linkWrapId: 'link1',
+      linkId: 'stage1link',
+      code_b64_rev: '0ADN',                            // reverse('NDA0') -> 404
+      file_rev: '4pm.syawria-eht-revo-ecnelis'         // reverse('silence-over-the-airways.mp4')
+    },
+    {
+      title: 'Stage 2: ENTRY PROTOCOL',
+      desc:  'Clone badges and bypass smart locks to breach the facility.',
+      inputId: 'access2',
+      linkWrapId: 'link2',
+      linkId: 'stage2link',
+      code_b64_rev: '==wM5cTM',                        // reverse('MTc5Mw==') -> 1793
+      file_rev: 'lmth.nam-cap'                         // reverse('pac-man.html')
+    },
+    {
+      title: 'Stage 3: NETWORK BREACH',
+      desc:  'Hijack the signal. Slip past their IDS. Access the relay node.',
+      inputId: 'access3',
+      linkWrapId: 'link3',
+      linkId: 'stage3link',
+      code_b64_rev: '==Qf1s3ZhlmR',                    // reverse('RmxhZ3s1fQ==') -> Flag{5}
+      file_rev: 'gpj.neddih'                           // reverse('hidden.jpg')
+    }
+  ];
+
+  // build <ol class="stage-list">…</ol>
+  const ol = d.createElement('ol');
+  ol.className = 'stage-list';
+
+  stages.forEach(s => {
+    const li = d.createElement('li');
+
+    const strong = d.createElement('strong');
+    strong.textContent = s.title;
+    li.appendChild(strong);
+    li.appendChild(d.createElement('br'));
+
+    li.appendChild(d.createTextNode(s.desc));
+    li.appendChild(d.createElement('br'));
+
+    const label = d.createElement('label');
+    label.setAttribute('for', s.inputId);
+    label.textContent = 'Access Code:';
+    li.appendChild(label);
+
+    const input = d.createElement('input');
+    input.type = 'password';
+    input.id = s.inputId;
+    input.placeholder = '********';
+    li.appendChild(input);
+
+    const btn = d.createElement('button');
+    btn.textContent = 'Submit';
+    btn.addEventListener('click', function(){
+      const v = input.value.trim();
+      const code = b64rev(s.code_b64_rev);
+      if (v === code){
+        wrap.style.display = 'block';
+        link.href = unrev(s.file_rev);
+        input.style.border = '2px solid #00ff00';
+      } else {
+        wrap.style.display = 'none';
+        input.style.border = '2px solid red';
+      }
+    });
+    li.appendChild(btn);
+
+    const wrap = d.createElement('div');
+    wrap.id = s.linkWrapId;
+    wrap.style.display = 'none';
+    wrap.style.marginTop = '10px';
+
+    const link = d.createElement('a');
+    link.id = s.linkId;
+    link.href = '#';
+    link.target = '_blank';
+    link.textContent = (s === stages[0]) ? 'Access Granted – View File' : 'Access Granted – Proceed to Stage ' + (stages.indexOf(s)+1);
+    wrap.appendChild(link);
+
+    li.appendChild(wrap);
+    ol.appendChild(li);
+  });
+
+  mount.appendChild(ol);
+})(window, document);
 </script>
 
 </body>
