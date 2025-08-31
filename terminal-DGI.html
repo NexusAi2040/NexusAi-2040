@@ -108,7 +108,7 @@
       <span class="ps1" id="ps1">guest@dgi:~$</span>
       <input id="cmd" type="text" inputmode="text" autocomplete="off" spellcheck="false" aria-label="Terminal input" autofocus />
     </div>
-    <div class="hint">Expected path: <code>ls</code> → <code>cat README.txt</code></div>
+    
   </main>
 
   <script>
@@ -117,14 +117,11 @@
       const inputEl = document.getElementById('cmd');
       const ps1 = document.getElementById('ps1').textContent;
 
-      /** simple command history */
       const hist = [];
       let histIdx = -1;
 
-      /** state: which files exist */
-      const files = new Set(); // empty until first `ls` reveals README.txt
+      const files = new Set();
 
-      /** utilities */
       function appendLine(htmlOrNode, cssClass) {
         const line = document.createElement('div');
         line.className = 'line' + (cssClass ? ' ' + cssClass : '');
@@ -155,9 +152,7 @@
       }
 
       function escapeHTML(s) {
-        return s.replace(/[&<>"']/g, c => ({
-          '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-        }[c]));
+        return s.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
       }
 
       async function run(cmdRaw) {
@@ -165,23 +160,15 @@
         if (!cmd) return;
         appendCommand(cmd);
 
-        // record in history
         hist.push(cmdRaw);
         histIdx = hist.length;
 
-        // parse
         const parts = cmd.split(/\s+/);
         const name = (parts[0] || '').toLowerCase();
         const arg = parts.slice(1).join(' ');
 
         if (name === 'help') {
-          appendOutput(
-`Available commands:
-  ls                List files
-  cat README.txt    Read the guard's message
-  clear             Clear the screen
-  help              Show this help`
-          );
+          appendOutput(`Available commands:\n  ls                List files\n  ls -al            Show all files (including hidden)\n  cat               Read <FILENAME>\n  clear             Clear the screen\n  help              Show this help`);
           return;
         }
 
@@ -190,19 +177,16 @@
           return;
         }
 
+        if (cmd === 'ls -al') {
+          files.add('README.txt');
+          files.add('.6');
+          appendOutput('README.txt  .6');
+          return;
+        }
+
         if (name === 'ls') {
-          // Reveal README.txt when ls is first run
-          if (!files.has('README.txt')) files.add('README.txt');
-          if (files.size === 0) {
-            appendOutput('');
-          } else {
-            // show files (only README.txt for now)
-            const listing = Array.from(files).map(f => f === 'README.txt'
-              ? `\u001b[32mREADME.txt\u001b[0m`
-              : f).join('  ');
-            // Colour codes won't render in HTML; we'll just style it:
-            appendLine(`<span class="file">README.txt</span>`);
-          }
+          files.add('README.txt');
+          appendOutput('README.txt');
           return;
         }
 
@@ -211,22 +195,18 @@
             appendError('cat: missing file operand');
             return;
           }
-          const target = arg.trim().toLowerCase();
-          if (target !== 'readme.txt') {
+          const target = arg.trim();
+          if (!files.has(target)) {
             appendError(`cat: ${escapeHTML(arg)}: No such file`);
             return;
           }
-          if (!files.has('README.txt')) {
-            appendError('cat: README.txt: No such file');
-            return;
-          }
           try {
-            const res = await fetch('README.txt', { cache: 'no-store' });
+            const res = await fetch(target, { cache: 'no-store' });
             if (!res.ok) throw new Error('HTTP ' + res.status);
             const text = await res.text();
             appendOutput(text);
           } catch (e) {
-            appendError('cat: README.txt: cannot read file (ensure README.txt is next to this HTML)');
+            appendError(`cat: ${target}: cannot read file (make sure the file exists)`);
           }
           return;
         }
@@ -234,7 +214,6 @@
         appendError(`command not found: ${name}`);
       }
 
-      // Input handling
       inputEl.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
           const val = inputEl.value;
@@ -245,7 +224,6 @@
           if (histIdx >= 0 && hist[histIdx] != null) {
             e.preventDefault();
             inputEl.value = hist[histIdx];
-            // place caret at end
             setTimeout(() => inputEl.setSelectionRange(inputEl.value.length, inputEl.value.length), 0);
           }
         } else if (e.key === 'ArrowDown') {
@@ -261,9 +239,7 @@
         }
       });
 
-      // Focus the input when clicking anywhere in the terminal
       document.addEventListener('click', () => inputEl.focus(), false);
-      // Ensure initial focus
       inputEl.focus();
     })();
   </script>
