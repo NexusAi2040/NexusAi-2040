@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Do Good Industries // Secure Terminal</title>
+  <meta name="description" content="CTF terminal interface for NEXUS shutdown sequence." />
+  <style>
+    :root {
+      --bg: #0b0b0b;
+      --fg: #b7ffb7;
+      --dim: #79c879;
+      --accent: #9cff9c;
+      --danger: #ff8080;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      height: 100%;
+      margin: 0;
+      background: var(--bg);
+      color: var(--fg);
+      font: 16px/1.5 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    }
+    .terminal {
+      max-width: 960px;
+      margin: 3rem auto;
+      padding: 1.25rem 1rem 2rem;
+      background: #0e0e0e;
+      border: 1px solid #133813;
+      border-radius: 10px;
+      box-shadow: 0 0 0 1px #0a1f0a inset, 0 0 25px rgba(0,255,0,0.05);
+    }
+    .titlebar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 0.75rem;
+    }
+    .dot { width: 12px; height: 12px; border-radius: 50%; }
+    .dot.red { background: #ff5f56; }
+    .dot.amber { background: #ffbd2e; }
+    .dot.green { background: #27c93f; }
+    .titlebar span { color: var(--dim); opacity: 0.9; }
+    #history {
+      white-space: pre-wrap;
+      word-break: break-word;
+      min-height: 240px;
+    }
+    .line { margin: 0.125rem 0; }
+    .ps1 { color: var(--dim); }
+    .file { color: var(--accent); }
+    .error { color: var(--danger); }
+    .output pre {
+      margin: 0.25rem 0 0.5rem 0;
+      padding: 0.5rem 0.75rem;
+      background: #0b120b;
+      border-left: 2px solid #1a4d1a;
+      white-space: pre-wrap;
+    }
+    .prompt {
+      display: flex;
+      gap: .5rem;
+      align-items: center;
+      margin-top: .25rem;
+    }
+    .prompt .ps1 { flex: 0 0 auto; }
+    #cmd {
+      flex: 1 1 auto;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--fg);
+      caret-color: var(--accent);
+      font: inherit;
+      padding: 0;
+    }
+    .hint {
+      color: var(--dim);
+      opacity: 0.8;
+      margin-top: 0.25rem;
+      font-size: 0.9rem;
+    }
+    .blink {
+      animation: blink 1.1s steps(1) infinite;
+    }
+    @keyframes blink { 50% { opacity: 0; } }
+
+    @media (max-width: 600px) {
+      .terminal { margin: 1rem; }
+    }
+  </style>
+</head>
+<body>
+  <main class="terminal" role="application" aria-label="Secure command terminal">
+    <div class="titlebar" aria-hidden="true">
+      <div class="dot red"></div>
+      <div class="dot amber"></div>
+      <div class="dot green"></div>
+      <span>Do Good Industries — Secure Node</span>
+    </div>
+
+    <div id="history" aria-live="polite" aria-atomic="false">
+      <div class="line">Booting secure shell… <span class="blink">_</span></div>
+      <div class="line">Type <strong>help</strong> for commands.</div>
+    </div>
+
+    <div class="prompt">
+      <span class="ps1" id="ps1">guest@dgi:~$</span>
+      <input id="cmd" type="text" inputmode="text" autocomplete="off" spellcheck="false" aria-label="Terminal input" autofocus />
+    </div>
+    <div class="hint">Expected path: <code>ls</code> → <code>cat README.txt</code></div>
+  </main>
+
+  <script>
+    (() => {
+      const historyEl = document.getElementById('history');
+      const inputEl = document.getElementById('cmd');
+      const ps1 = document.getElementById('ps1').textContent;
+
+      /** simple command history */
+      const hist = [];
+      let histIdx = -1;
+
+      /** state: which files exist */
+      const files = new Set(); // empty until first `ls` reveals README.txt
+
+      /** utilities */
+      function appendLine(htmlOrNode, cssClass) {
+        const line = document.createElement('div');
+        line.className = 'line' + (cssClass ? ' ' + cssClass : '');
+        if (typeof htmlOrNode === 'string') {
+          line.innerHTML = htmlOrNode;
+        } else {
+          line.appendChild(htmlOrNode);
+        }
+        historyEl.appendChild(line);
+        historyEl.parentElement.scrollTop = historyEl.parentElement.scrollHeight;
+      }
+
+      function appendCommand(cmd) {
+        appendLine(`<span class="ps1">${escapeHTML(ps1)}</span> ${escapeHTML(cmd)}`);
+      }
+
+      function appendOutput(text) {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'output';
+        const pre = document.createElement('pre');
+        pre.textContent = text;
+        wrapper.appendChild(pre);
+        appendLine(wrapper);
+      }
+
+      function appendError(msg) {
+        appendLine(escapeHTML(msg), 'error');
+      }
+
+      function escapeHTML(s) {
+        return s.replace(/[&<>"']/g, c => ({
+          '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+        }[c]));
+      }
+
+      async function run(cmdRaw) {
+        const cmd = cmdRaw.trim();
+        if (!cmd) return;
+        appendCommand(cmd);
+
+        // record in history
+        hist.push(cmdRaw);
+        histIdx = hist.length;
+
+        // parse
+        const parts = cmd.split(/\s+/);
+        const name = (parts[0] || '').toLowerCase();
+        const arg = parts.slice(1).join(' ');
+
+        if (name === 'help') {
+          appendOutput(
+`Available commands:
+  ls                List files
+  cat README.txt    Read the guard's message
+  clear             Clear the screen
+  help              Show this help`
+          );
+          return;
+        }
+
+        if (name === 'clear') {
+          historyEl.innerHTML = '';
+          return;
+        }
+
+        if (name === 'ls') {
+          // Reveal README.txt when ls is first run
+          if (!files.has('README.txt')) files.add('README.txt');
+          if (files.size === 0) {
+            appendOutput('');
+          } else {
+            // show files (only README.txt for now)
+            const listing = Array.from(files).map(f => f === 'README.txt'
+              ? `\u001b[32mREADME.txt\u001b[0m`
+              : f).join('  ');
+            // Colour codes won't render in HTML; we'll just style it:
+            appendLine(`<span class="file">README.txt</span>`);
+          }
+          return;
+        }
+
+        if (name === 'cat') {
+          if (!arg) {
+            appendError('cat: missing file operand');
+            return;
+          }
+          const target = arg.trim().toLowerCase();
+          if (target !== 'readme.txt') {
+            appendError(`cat: ${escapeHTML(arg)}: No such file`);
+            return;
+          }
+          if (!files.has('README.txt')) {
+            appendError('cat: README.txt: No such file');
+            return;
+          }
+          try {
+            const res = await fetch('README.txt', { cache: 'no-store' });
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            const text = await res.text();
+            appendOutput(text);
+          } catch (e) {
+            appendError('cat: README.txt: cannot read file (ensure README.txt is next to this HTML)');
+          }
+          return;
+        }
+
+        appendError(`command not found: ${name}`);
+      }
+
+      // Input handling
+      inputEl.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          const val = inputEl.value;
+          inputEl.value = '';
+          run(val);
+        } else if (e.key === 'ArrowUp') {
+          if (histIdx > 0) histIdx--;
+          if (histIdx >= 0 && hist[histIdx] != null) {
+            e.preventDefault();
+            inputEl.value = hist[histIdx];
+            // place caret at end
+            setTimeout(() => inputEl.setSelectionRange(inputEl.value.length, inputEl.value.length), 0);
+          }
+        } else if (e.key === 'ArrowDown') {
+          if (histIdx < hist.length) histIdx++;
+          if (histIdx === hist.length) {
+            e.preventDefault();
+            inputEl.value = '';
+          } else if (hist[histIdx] != null) {
+            e.preventDefault();
+            inputEl.value = hist[histIdx];
+            setTimeout(() => inputEl.setSelectionRange(inputEl.value.length, inputEl.value.length), 0);
+          }
+        }
+      });
+
+      // Focus the input when clicking anywhere in the terminal
+      document.addEventListener('click', () => inputEl.focus(), false);
+      // Ensure initial focus
+      inputEl.focus();
+    })();
+  </script>
+</body>
+</html>
