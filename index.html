@@ -59,9 +59,7 @@
     footer { text-align:center; padding:2rem; font-size:.9rem; color:#888; }
   </style>
 </head>
-
 <body>
-
 <!-- Terminal Access Panel -->
 <div class="terminal-login">
   <strong>🔐 KILL SWITCH</strong>
@@ -70,10 +68,9 @@
     <input type="password" id="accesscode" name="accesscode" placeholder="********">
   </form>
   <div id="killswitch-link" style="display:none; margin-top:10px;">
-    <a href="endofnexus.mp4" target="_blank" style="color:#00f0ff;">🗝️ Access Granted – Play File</a>
+    <a href="endofnexus.mp4" target="_blank" style="color:#00f0ff;">🔑 Access Granted – Play File</a>
   </div>
 </div>
-
 <!-- Page Header -->
 <header>
   <h1>GHOSTSTRATS // NOTORIOUS SQUIRREL</h1>
@@ -83,8 +80,8 @@
     aHR0cHM6Ly93d3cuZ29vZ2xlLmNvbS9tYXBzL2QvdS8xL2VkaXQ/bWlkPTFwalBMVnZnSnZCdm1xeFdJMFlkTTlBaHVBQlJyTDNjJnVzcD1zaGFyaW5n
   </div>
 </header>
-
 <main>
+  <main>
   <div class="section">
     <div class="crawl-container">
       <div class="crawl">
@@ -153,17 +150,14 @@ Step into the night.
 
   <div class="section"><p>This is just the beginning...</p></div>
 </main>
-
 <footer>
   &copy; 2025 GHOSTSTRATS CTF // Designed by Notorious Squirrel
 </footer>
-
 <script>
   function revealBase64(){ document.getElementById('base64box').style.display='block'; }
-
   function checkKillSwitchCode(){
     const input = document.getElementById('accesscode').value.trim();
-    const decoded = atob('NTAzNjI='); // 50362
+    const decoded = atob('NTAzNjI=');
     if (input === decoded){
       document.getElementById('killswitch-link').style.display='block';
       document.getElementById('accesscode').style.border='2px solid #00ff00';
@@ -174,73 +168,38 @@ Step into the night.
     return false;
   }
 </script>
-
-<!-- Reliable stage injector (obfuscated data; robust runtime build) -->
 <script>
 (function(w,d){
   'use strict';
   const mount = d.querySelector('#stage-mount') || d.body;
-
   const rev = s => s.split('').reverse().join('');
-  const b64rev = s => w.atob(rev(s));                 
-  const unrev  = s => rev(s);                          
-
+  const b64rev = s => w.atob(rev(s));
+  const unrev  = s => rev(s);
   const stages = [
-    {
-      title: 'Stage 1: SIGNAL IN THE STATIC',
-      desc:  'Use OSINT to locate Do Good Industries HQ via Instagram clues.',
-      inputId: 'access1',
-      linkWrapId: 'link1',
-      linkId: 'stage1link',
-      code_b64_rev: '0ADN',                            
-      file_rev: '4pm.syawria-eht-revo-ecnelis'         
-    },
-    {
-      title: 'Stage 2: ENTRY PROTOCOL',
-      desc:  'Clone badges and bypass smart locks to breach the facility.',
-      inputId: 'access2',
-      linkWrapId: 'link2',
-      linkId: 'stage2link',
-      code_b64_rev: '==wM5cTM',                        
-      file_rev: 'lmth.nam-cap'                         
-    },
-    {
-      title: 'Stage 3: NETWORK BREACH',
-      desc:  'Hijack the signal. Slip past their IDS. Access the relay node.',
-      inputId: 'access3',
-      linkWrapId: 'link3',
-      linkId: 'stage3link',
-      code_b64_rev: '==Qf1s3ZhxmR',                    
-      file_rev: 'gpj.neddih'                           
-    }
+    { title:'Stage 1: SIGNAL IN THE STATIC', desc:'Use OSINT to locate Do Good Industries HQ via Instagram clues.', inputId:'access1', linkWrapId:'link1', linkId:'stage1link', code_b64_rev:'0ADN', file_rev:'4pm.syawria-eht-revo-ecnelis' },
+    { title:'Stage 2: ENTRY PROTOCOL', desc:'Clone badges and bypass smart locks to breach the facility.', inputId:'access2', linkWrapId:'link2', linkId:'stage2link', code_b64_rev:'==wM5cTM', file_rev:'lmth.nam-cap' },
+    { title:'Stage 3: NETWORK BREACH', desc:'Hijack the signal. Slip past their IDS. Access the relay node.', inputId:'access3', linkWrapId:'link3', linkId:'stage3link', code_b64_rev:'==Qf1s3ZhxmR', file_rev:'gpj.neddih' },
+    { title:'Stage 4: MIRROR PROTOCOL', desc:'Send a message to the AI. Decode the reply. Reflect on the truth.', inputId:'access4', linkWrapId:'link4', linkId:'stage4link', code_b64_rev:'NDY4Mg=='.split('').reverse().join(''), file_rev:'lmth.IGD-lanimret'.split('').reverse().join('') }
   ];
-
-  // build <ol class="stage-list">…</ol>
   const ol = d.createElement('ol');
   ol.className = 'stage-list';
-
   stages.forEach(s => {
     const li = d.createElement('li');
-
     const strong = d.createElement('strong');
     strong.textContent = s.title;
     li.appendChild(strong);
     li.appendChild(d.createElement('br'));
-
     li.appendChild(d.createTextNode(s.desc));
     li.appendChild(d.createElement('br'));
-
     const label = d.createElement('label');
     label.setAttribute('for', s.inputId);
     label.textContent = 'Access Code:';
     li.appendChild(label);
-
     const input = d.createElement('input');
     input.type = 'password';
     input.id = s.inputId;
     input.placeholder = '********';
     li.appendChild(input);
-
     const btn = d.createElement('button');
     btn.textContent = 'Submit';
     btn.addEventListener('click', function(){
@@ -256,26 +215,21 @@ Step into the night.
       }
     });
     li.appendChild(btn);
-
     const wrap = d.createElement('div');
     wrap.id = s.linkWrapId;
     wrap.style.display = 'none';
     wrap.style.marginTop = '10px';
-
     const link = d.createElement('a');
     link.id = s.linkId;
     link.href = '#';
     link.target = '_blank';
     link.textContent = (s === stages[0]) ? 'Access Granted – View File' : 'Access Granted – Proceed to Stage ' + (stages.indexOf(s)+1);
     wrap.appendChild(link);
-
     li.appendChild(wrap);
     ol.appendChild(li);
   });
-
   mount.appendChild(ol);
 })(window, document);
 </script>
-
 </body>
 </html>
