@@ -183,8 +183,8 @@ Step into the night.
 
   // helpers
   const rev = s => s.split('').reverse().join('');
-  const b64rev = s => w.atob(rev(s));                 // expects reversed Base64
-  const unrev  = s => rev(s);                          // for lightly-obfuscated file names
+  const b64rev = s => w.atob(rev(s));                 
+  const unrev  = s => rev(s);                          
 
   // stage data (codes are reversed Base64; files are reversed plain strings)
   const stages = [
@@ -194,8 +194,8 @@ Step into the night.
       inputId: 'access1',
       linkWrapId: 'link1',
       linkId: 'stage1link',
-      code_b64_rev: '0ADN',                            // reverse('NDA0') -> 404
-      file_rev: '4pm.syawria-eht-revo-ecnelis'         // reverse('silence-over-the-airways.mp4')
+      code_b64_rev: '0ADN',                            
+      file_rev: '4pm.syawria-eht-revo-ecnelis'         
     },
     {
       title: 'Stage 2: ENTRY PROTOCOL',
@@ -203,8 +203,8 @@ Step into the night.
       inputId: 'access2',
       linkWrapId: 'link2',
       linkId: 'stage2link',
-      code_b64_rev: '==wM5cTM',                        // reverse('MTc5Mw==') -> 1793
-      file_rev: 'lmth.nam-cap'                         // reverse('pac-man.html')
+      code_b64_rev: '==wM5cTM',                        
+      file_rev: 'lmth.nam-cap'                         
     },
     {
       title: 'Stage 3: NETWORK BREACH',
@@ -212,8 +212,8 @@ Step into the night.
       inputId: 'access3',
       linkWrapId: 'link3',
       linkId: 'stage3link',
-      code_b64_rev: '==Qf1s3ZhlmR',                    // reverse('RmxhZ3s1fQ==') -> Flag{5}
-      file_rev: 'gpj.neddih'                           // reverse('hidden.jpg')
+      code_b64_rev: '==Qf1s3ZhlmR',                    
+      file_rev: 'gpj.neddih'                           
     }
   ];
 
