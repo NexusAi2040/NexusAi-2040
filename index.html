@@ -176,12 +176,44 @@ Step into the night.
   const b64rev = s => w.atob(rev(s));
   const unrev  = s => rev(s);
   const stages = [
-    { title:'Stage 1: SIGNAL IN THE STATIC', desc:'Use your skills to locate Do Good Industries HQ & find the hidden message.', inputId:'access1', linkWrapId:'link1', linkId:'stage1link', code_b64_rev:'0ADN', file_rev:'4pm.syawria-eht-revo-ecnelis' },
-    { title:'Stage 2: ENTRY PROTOCOL', desc:'Collect dropped access badges and bypass smart locks to breach the facility, DONT GET CAUGHT!!!.', inputId:'access2', linkWrapId:'link2', linkId:'stage2link', code_b64_rev:'==wM5cTM', file_rev:'lmth.nam-cap' },
-    { title:'Stage 3: HIDDEN BREACH', desc:'Breach, breach, breach. embed yoursef in the map and find the hidden solution.', inputId:'access3', linkWrapId:'link3', linkId:'stage3link', code_b64_rev:'==Qf1s3ZhxmR', file_rev:'gpj.neddih' },
-    { title:'Stage 4: SPECULUM PROTOCOL', desc:'The situation is terminal. Decode the reply. Reflect on the truth.', inputId:'access4', linkWrapId:'link4', linkId:'stage4link', code_b64_rev: 'NDY4Mg=='.split('').reverse().join('')
-, file_rev:'terminal-DGI.html'.split('').reverse().join('') }
-  ];
+  {
+    title: 'Stage 1: SIGNAL IN THE STATIC',
+    desc: 'Use your skills to locate Do Good Industries HQ & find the hidden message.',
+    inputId: 'access1',
+    linkWrapId: 'link1',
+    linkId: 'stage1link',
+    code_b64_rev: '0ADN', // "404" reversed and not base64
+    file_rev: '4pm.syawria-eht-revo-ecnelis' // 'silence-over-the-airways.mp4' reversed
+  },
+  {
+    title: 'Stage 2: ENTRY PROTOCOL',
+    desc: 'Collect dropped access badges and bypass smart locks to breach the facility. DONT GET CAUGHT!!!',
+    inputId: 'access2',
+    linkWrapId: 'link2',
+    linkId: 'stage2link',
+    code_b64_rev: '==wM5cTM', // "1793" base64-encoded and reversed
+    file_rev: 'lmth.nam-cap' // 'pac-man.html' reversed
+  },
+  {
+    title: 'Stage 3: HIDDEN BREACH',
+    desc: 'Breach, breach, breach. Embed yourself in the map and find the hidden solution.',
+    inputId: 'access3',
+    linkWrapId: 'link3',
+    linkId: 'stage3link',
+    code_b64_rev: '==Qf1s3ZhxmR', // "Flag{5}" base64-encoded and reversed
+    file_rev: 'gpj.neddih' // 'hidden.jpg' reversed
+  },
+  {
+    title: 'Stage 4: SPECULUM PROTOCOL',
+    desc: 'The situation is terminal. Decode the reply. Reflect on the truth.',
+    inputId: 'access4',
+    linkWrapId: 'link4',
+    linkId: 'stage4link',
+    code_b64_rev: 'NDY4Mg=='.split('').reverse().join(''), // "4682" base64-reversed
+    file_rev: 'terminal-DGI.html'.split('').reverse().join('')
+  }
+];
+
   const ol = d.createElement('ol');
   ol.className = 'stage-list';
   stages.forEach(s => {
