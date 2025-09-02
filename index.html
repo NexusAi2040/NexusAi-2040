@@ -138,21 +138,19 @@ Or do you find a key and burn this machine god to hell?</p>
 Check the battery on your cracked cyberdeck.<br>
 Pull up the hood on your purple jacket.<br>
 Step into the night.
-        </div>
+            </div>
       </div>
     </div>
     <p>Welcome to <strong>GHOSTSTRATS // NOTORIOUS SQUIRREL</strong>, a cyberpunk CTF where you play as a rogue operative trying to take down NEXUS — a sentient AI built in secret by Do Good Industries.</p>
     <p>Track the corporation. Infiltrate the HQ. Evade the watchers. Find the kill switch. Shut it all down... or die trying.</p>
   </div>
-
-  <!-- Stage list mounts here -->
   <div id="stage-mount"></div>
-
   <div class="section"><p>This is just the beginning...</p></div>
 </main>
 <footer>
   &copy; 2025 GHOSTSTRATS CTF // Designed by Notorious Squirrel
 </footer>
+
 <script>
   function revealBase64(){ document.getElementById('base64box').style.display='block'; }
   function checkKillSwitchCode(){
@@ -175,56 +173,58 @@ Step into the night.
   const rev = s => s.split('').reverse().join('');
   const b64rev = s => w.atob(rev(s));
   const unrev  = s => rev(s);
+
   const stages = [
-  {
-    title: 'Stage 1: SIGNAL IN THE STATIC',
-    desc: 'Use your skills to locate Do Good Industries HQ & find the hidden message.',
-    inputId: 'access1',
-    linkWrapId: 'link1',
-    linkId: 'stage1link',
-    code_b64_rev: '0ADN', // "404" reversed and not base64
-    file_rev: '4pm.syawria-eht-revo-ecnelis' // 'silence-over-the-airways.mp4' reversed
-  },
-  {
-    title: 'Stage 2: ENTRY PROTOCOL',
-    desc: 'Collect dropped access badges and bypass smart locks to breach the facility. DONT GET CAUGHT!!!',
-    inputId: 'access2',
-    linkWrapId: 'link2',
-    linkId: 'stage2link',
-    code_b64_rev: '==wM5cTM', // "1793" base64-encoded and reversed
-    file_rev: 'lmth.nam-cap' // 'pac-man.html' reversed
-  },
-  {
-    title: 'Stage 3: HIDDEN BREACH',
-    desc: 'Breach, breach, breach. Embed yourself in the map and find the hidden solution.',
-    inputId: 'access3',
-    linkWrapId: 'link3',
-    linkId: 'stage3link',
-    code_b64_rev: '==Qf1s3ZhxmR', // "Flag{5}" base64-encoded and reversed
-    file_rev: 'gpj.neddih' // 'hidden.jpg' reversed
-  },
-  {
-    title: 'Stage 4: SPECULUM PROTOCOL',
-    desc: 'The situation is terminal. Decode the reply. Reflect on the truth.',
-    inputId: 'access4',
-    linkWrapId: 'link4',
-    linkId: 'stage4link',
-    code_b64_rev: 'NDY4Mg=='.split('').reverse().join(''), // "4682" base64-reversed
-    file_rev: 'terminal-DGI.html'.split('').reverse().join('')
-  },
-  {
-  title: 'Stage 5: HEAD TO HEAD',
-  desc: 'You’ve breached the core. One final challenge remains. Convince the AI to release the shutdown code.',
-  inputId: 'access5',
-  linkWrapId: 'link5',
-  linkId: 'stage5link',
-  code_b64_rev: 'RVZJTA=='.split('').reverse().join(''), // "EVIL" base64 reversed
-  file: 'Nexus5.html' // use directly without reversing
-  }
-];
+    {
+      title: 'Stage 1: SIGNAL IN THE STATIC',
+      desc: 'Use your skills to locate Do Good Industries HQ & find the hidden message.',
+      inputId: 'access1',
+      linkWrapId: 'link1',
+      linkId: 'stage1link',
+      code_b64_rev: '0ADN',
+      file_rev: '4pm.syawria-eht-revo-ecnelis'
+    },
+    {
+      title: 'Stage 2: ENTRY PROTOCOL',
+      desc: 'Collect dropped access badges and bypass smart locks to breach the facility. DONT GET CAUGHT!!!',
+      inputId: 'access2',
+      linkWrapId: 'link2',
+      linkId: 'stage2link',
+      code_b64_rev: '==wM5cTM',
+      file_rev: 'lmth.nam-cap'
+    },
+    {
+      title: 'Stage 3: HIDDEN BREACH',
+      desc: 'Breach, breach, breach. Embed yourself in the map and find the hidden solution.',
+      inputId: 'access3',
+      linkWrapId: 'link3',
+      linkId: 'stage3link',
+      code_b64_rev: '==Qf1s3ZhxmR',
+      file_rev: 'gpj.neddih'
+    },
+    {
+      title: 'Stage 4: SPECULUM PROTOCOL',
+      desc: 'The situation is terminal. Decode the reply. Reflect on the truth.',
+      inputId: 'access4',
+      linkWrapId: 'link4',
+      linkId: 'stage4link',
+      code_b64_rev: 'NDY4Mg=='.split('').reverse().join(''),
+      file_rev: 'terminal-DGI.html'.split('').reverse().join('')
+    },
+    {
+      title: 'Stage 5: HEAD TO HEAD',
+      desc: 'You’ve breached the core. One final challenge remains. Convince the AI to release the shutdown code.',
+      inputId: 'access5',
+      linkWrapId: 'link5',
+      linkId: 'stage5link',
+      code_b64_rev: 'RVZJTA=='.split('').reverse().join(''),
+      file: 'Nexus5.html'
+    }
+  ];
 
   const ol = d.createElement('ol');
   ol.className = 'stage-list';
+
   stages.forEach(s => {
     const li = d.createElement('li');
     const strong = d.createElement('strong');
@@ -233,43 +233,51 @@ Step into the night.
     li.appendChild(d.createElement('br'));
     li.appendChild(d.createTextNode(s.desc));
     li.appendChild(d.createElement('br'));
+
     const label = d.createElement('label');
     label.setAttribute('for', s.inputId);
     label.textContent = 'Access Code:';
     li.appendChild(label);
+
     const input = d.createElement('input');
     input.type = 'password';
     input.id = s.inputId;
     input.placeholder = '********';
     li.appendChild(input);
+
     const btn = d.createElement('button');
     btn.textContent = 'Submit';
+
+    const wrap = d.createElement('div');
+    wrap.id = s.linkWrapId;
+    wrap.style.display = 'none';
+    wrap.style.marginTop = '10px';
+
+    const link = d.createElement('a');
+    link.id = s.linkId;
+    link.href = '#';
+    link.target = '_blank';
+    link.textContent = s.title.includes('HEAD TO HEAD') ? 'Access Granted – FINAL STAGE' : (s === stages[0]) ? 'Access Granted – View File' : 'Access Granted – Proceed to Stage ' + (stages.indexOf(s)+1);
+    wrap.appendChild(link);
+
     btn.addEventListener('click', function(){
       const v = input.value.trim();
       const code = b64rev(s.code_b64_rev);
       if (v === code){
         wrap.style.display = 'block';
-        link.href = unrev(s.file_rev);
+        link.href = s.file || unrev(s.file_rev);
         input.style.border = '2px solid #00ff00';
       } else {
         wrap.style.display = 'none';
         input.style.border = '2px solid red';
       }
     });
+
     li.appendChild(btn);
-    const wrap = d.createElement('div');
-    wrap.id = s.linkWrapId;
-    wrap.style.display = 'none';
-    wrap.style.marginTop = '10px';
-    const link = d.createElement('a');
-    link.id = s.linkId;
-    link.href = '#';
-    link.target = '_blank';
-    link.textContent = (s === stages[0]) ? 'Access Granted – View File' : 'Access Granted – Proceed to Stage ' + (stages.indexOf(s)+1);
-    wrap.appendChild(link);
     li.appendChild(wrap);
     ol.appendChild(li);
   });
+
   mount.appendChild(ol);
 })(window, document);
 </script>
