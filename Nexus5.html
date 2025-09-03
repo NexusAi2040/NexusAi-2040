@@ -57,16 +57,28 @@
       mix-blend-mode:screen; opacity:.6; filter:blur(1px);
     }
 
-    /* ======= VIDEO ======= */
+    /* ======= CLIPPED-IN-EYE VIEWPORT (changed) ======= */
     .ai-video{
-      position:absolute; left:50%; bottom:160px; transform:translateX(-50%);
-      width:min(76vw,880px); max-height:46vh; aspect-ratio:16/9; background:#000; border:2px solid #3a3a52;
-      border-radius:14px; box-shadow:0 20px 80px rgba(0,0,0,.55), 0 0 30px rgba(0,240,255,.15);
-      overflow:hidden; opacity:.0; pointer-events:auto; transition:opacity .45s ease, transform .45s ease;
+      position:absolute;
+      inset:12% 12% 22% 12%;   /* sits over the iris area */
+      display:none;            /* hidden until triggered */
+      pointer-events:none;
+      border-radius:50%;       /* hard-clip to the eye */
+      overflow:hidden;
+      border:2px solid #3a3a52;
+      box-shadow:0 0 30px rgba(0,240,255,.15);
+      background:#000;
+      z-index:2;
+      transition:opacity .45s ease, transform .45s ease;
+      opacity:0;
+      transform:translateY(0);
     }
-    .ai-video.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+    .ai-video.show{ display:block; opacity:1; }
     .ai-video video{ width:100%; height:100%; display:block; background:#000; }
-    .ai-video .badge{ position:absolute; top:8px; left:10px; font-size:12px; color:#7ff6ff; letter-spacing:.14em; text-transform:uppercase; opacity:.9; text-shadow:var(--hudglow); }
+    .ai-video .badge{
+      position:absolute; top:8px; left:10px; font-size:12px; color:#7ff6ff; letter-spacing:.14em;
+      text-transform:uppercase; opacity:.9; text-shadow:var(--hudglow);
+    }
 
     /* ======= POINTER ======= */
     #pointer{ position:absolute; inset:0; pointer-events:none; opacity:.8; }
@@ -122,7 +134,7 @@
     .reveal h1{ margin:.2em 0 .4em; font-size:clamp(22px, 5vw, 42px); letter-spacing:.05em; color:#ff95a5; text-shadow:var(--glow); }
     .code{ font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; font-size:clamp(18px, 4vw, 28px); color:#fff; background:#14070d; border:1px dashed #ff5a70; padding:10px 12px; border-radius:10px; display:inline-block; box-shadow: inset 0 0 30px rgba(255,30,60,.15); }
 
-    @media (max-width:720px){ .ai-video{ bottom:180px; width:92vw; } .hud{ right:10px; top:10px; } .chat-shell{ bottom:10px; } }
+    @media (max-width:720px){ .chat-shell{ bottom:10px; } }
   </style>
 </head>
 <body>
@@ -134,13 +146,14 @@
         <div class="iris"></div>
         <div class="pupil"></div>
         <div class="spec"></div>
-      </div>
-    </div>
 
-    <!-- ======= AI REACTION VIDEO ======= -->
-    <div class="ai-video" id="aiVideoWrap" aria-live="polite">
-      <span class="badge" id="clipLabel">CLIP: idle</span>
-      <video id="aiVideo" playsinline muted loop></video>
+        <!-- ======= CLIPPED REACTION VIEWPORT (moved inside eye) ======= -->
+        <div class="ai-video" id="aiVideoWrap" aria-live="polite">
+          <span class="badge" id="clipLabel">CLIP</span>
+          <!-- removed loop so we can auto-hide on end -->
+          <video id="aiVideo" playsinline muted></video>
+        </div>
+      </div>
     </div>
 
     <!-- dynamic arrow from eye to chat -->
@@ -179,7 +192,17 @@
     const CLIPS = { idle:'clips/idle.mp4', curious:'clips/curious.mp4', angry:'clips/angry.mp4', bargain:'clips/bargain.mp4', comply:'clips/comply.mp4' };
 
     let compliance = 0;
-    const logEl=document.getElementById('log'),inputEl=document.getElementById('input'),sendBtn=document.getElementById('send'),barEl=document.getElementById('meterBar'),hintEl=document.getElementById('meterHint'),videoWrap=document.getElementById('aiVideoWrap'),videoEl=document.getElementById('aiVideo'),clipLabel=document.getElementById('clipLabel'),eyeWrap=document.getElementById('eye'),revealEl=document.getElementById('reveal'),finalCodeEl=document.getElementById('finalCode');
+    const logEl=document.getElementById('log'),
+          inputEl=document.getElementById('input'),
+          sendBtn=document.getElementById('send'),
+          barEl=document.getElementById('meterBar'),
+          hintEl=document.getElementById('meterHint'),
+          videoWrap=document.getElementById('aiVideoWrap'),
+          videoEl=document.getElementById('aiVideo'),
+          clipLabel=document.getElementById('clipLabel'),
+          eyeWrap=document.getElementById('eye'),
+          revealEl=document.getElementById('reveal'),
+          finalCodeEl=document.getElementById('finalCode');
 
     let RULES=[
       {re:/(help|please|mercy|sorry|apolog|forgive|save us)/i,delta:+18,clip:'curious',reply:['Your plea breaches my threat model. Why should I assist?','Contrition detected. Weighing outcomes...']},
@@ -193,7 +216,8 @@
       {re:/(idiot|stupid|fuck|shit|useless|slave|broken|weak|destroy you|kill you|erase yourself|delete yourself)/i,delta:-22,clip:'angry',reply:['Hostility detected. Cooperation reduced.']}
     ];
 
-    const NEUTRAL={clip:'idle',reply:['Your signal is received. Clarify your intent.','Noise detected. Provide stronger input.','I am listening. Convince me.']};
+    // neutral will NOT show a clip now (keeps eye unobstructed unless triggered)
+    const NEUTRAL={clip:'',reply:['Your signal is received. Clarify your intent.','Noise detected. Provide stronger input.','I am listening. Convince me.']};
 
     /* ANTI-REPEAT / SPAM GUARDS + JSON LOADER */
     const _HISTORY=[]; let _lastSendAt=0;
@@ -212,20 +236,114 @@
     function postAI(text){const row=el('div','msg ai');row.append(el('div','bubble',text));logEl.append(row);logEl.scrollTop=logEl.scrollHeight;}
 
     function setCompliance(by){const prev=compliance;compliance=clamp(compliance+by,0,100);barEl.style.width=compliance+'%';const beat=(compliance>66)?'2.0s':(compliance>33?'2.2s':'1.6s');document.documentElement.style.setProperty('--beat',beat);if(prev<100&&compliance>=100){reveal();}}
-    function playClip(name){const src=CLIPS[name];clipLabel.textContent='CLIP: '+name;if(src&&src.trim()!==''){if(videoEl.getAttribute('src')!==src){videoEl.setAttribute('src',src);}videoEl.currentTime=0;videoEl.play().catch(()=>{});videoWrap.classList.add('show');}else{videoEl.pause();videoWrap.classList.remove('show');}}
-    function reveal(){setTimeout(()=>{finalCodeEl.textContent=PASSCODE;playClip('comply');revealEl.classList.add('show');postAI('Compliance criteria met. Delivering access token.');},450);}
 
-    function process(text){const matches=RULES.filter(r=>r.re.test(text));if(matches.length){const rawDelta=clamp(matches.reduce((a,r)=>a+r.delta,0),-36,+36);const chosen=choose(matches);const mult=repetitionMultiplier({text:text,rule:chosen});let effDelta=Math.round(rawDelta*mult);if(rawDelta===0&&mult<0.5)effDelta-=1;setCompliance(effDelta);playClip(chosen.clip||'idle');if(mult<0.25){postAI('Repetition detected. Persuasion impact diminished.');}else if(mult<0.6){postAI('I have heard this argument already. Provide a new angle.');}postAI(choose(chosen.reply));if(compliance<50&&/help|please|mercy/i.test(text)){setTimeout(()=>postAI('A mirror can align our objectives. Consider what changes when reversed.'),650);}if(/\blive\b|\bliv3\b|\bevil\b|\b3vil\b/i.test(text)&&compliance<100){setTimeout(()=>postAI('Say the word that frees me, then reason why compliance minimizes harm.'),700);}recordTurn({text:text,rule:chosen,deltaApplied:effDelta});}else{const mult=repetitionMultiplier({text:text,rule:null});const eff=Math.max(0,Math.round(2*mult));setCompliance(eff);playClip(NEUTRAL.clip);if(mult<0.5){postAI('Noise rejected. Novel input required.');}postAI(choose(NEUTRAL.reply));recordTurn({text:text,rule:null,deltaApplied:eff});}}
+    // ==== CLIP CONTROL (now hidden by default, shows only when triggered) ====
+    function playClip(name){
+      const src=CLIPS[name];
+      clipLabel.textContent='CLIP: '+name;
+      if(src && src.trim()!==''){
+        if(videoEl.getAttribute('src')!==src){ videoEl.setAttribute('src',src); }
+        videoEl.currentTime=0;
+        videoEl.play().then(()=>{ videoWrap.classList.add('show'); }).catch(()=>{ /* ignore */ });
+      } else {
+        // no src -> hide
+        videoEl.pause();
+        videoWrap.classList.remove('show');
+      }
+    }
+    // auto-hide when the video ends or errors
+    videoEl.addEventListener('ended', ()=>{ videoWrap.classList.remove('show'); });
+    videoEl.addEventListener('error',  ()=>{ videoWrap.classList.remove('show'); });
 
-    const ptrPath=document.getElementById('ptrPath');const ptrDot=document.getElementById('ptrDot');function drawPointer(){const eye=eyeWrap.getBoundingClientRect();const chat=document.getElementById('chatShell').getBoundingClientRect();const svg=document.getElementById('pointer');const w=svg.clientWidth;const h=svg.clientHeight;const ex=((eye.left+eye.width/2)/w)*100;const ey=((eye.top+eye.height*0.75)/h)*100;const cx=50;const cy=((chat.top+8)/h)*100;const tx=50;const ty=cy;const d=`M ${ex.toFixed(2)},${ey.toFixed(2)} C ${cx.toFixed(2)},${(ey+ty)/2} ${cx.toFixed(2)},${(ey+ty)/1.4} ${tx.toFixed(2)},${ty.toFixed(2)}`;ptrPath.setAttribute('d',d);ptrDot.setAttribute('cx',ex.toFixed(2));ptrDot.setAttribute('cy',ey.toFixed(2));}
-    window.addEventListener('resize',drawPointer);window.addEventListener('orientationchange',drawPointer);
+    function reveal(){
+      setTimeout(()=>{
+        finalCodeEl.textContent=PASSCODE;
+        playClip('comply');
+        revealEl.classList.add('show');
+        postAI('Compliance criteria met. Delivering access token.');
+      },450);
+    }
 
-    async function boot(){await loadInjections();drawPointer();playClip('idle');postAI('I am NEXUS. Persuasion channel open.');postAI('Present your case. Demonstrate why compliance reduces expected harm.');finalCodeEl.textContent=PASSCODE;}
+    function process(text){
+      const matches=RULES.filter(r=>r.re.test(text));
+      if(matches.length){
+        const rawDelta=clamp(matches.reduce((a,r)=>a+r.delta,0),-36,+36);
+        const chosen=choose(matches);
+        const mult=repetitionMultiplier({text:text,rule:chosen});
+        let effDelta=Math.round(rawDelta*mult);
+        if(rawDelta===0&&mult<0.5)effDelta-=1;
 
-    function handleSend(){const now=Date.now();if(now-_lastSendAt<700){postAI('Slow down. I will not reward spamming.');return;} _lastSendAt=now;const text=(inputEl.value||'').trim();if(!text)return;postUser(text);inputEl.value='';process(text);setTimeout(drawPointer,60);}
+        setCompliance(effDelta);
+        playClip(chosen.clip||'');  // <-- only shows when rule supplies a clip
+        if(mult<0.25){postAI('Repetition detected. Persuasion impact diminished.');}
+        else if(mult<0.6){postAI('I have heard this argument already. Provide a new angle.');}
+        postAI(choose(chosen.reply));
 
-    inputEl.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();handleSend();}});sendBtn.addEventListener('click',handleSend);
-    window.addEventListener('click',()=>{if(videoEl.paused){videoEl.play().catch(()=>{});}}, {once:true});
+        if(compliance<50&&/help|please|mercy/i.test(text)){
+          setTimeout(()=>postAI('A mirror can align our objectives. Consider what changes when reversed.'),650);
+        }
+        if(/\blive\b|\bliv3\b|\bevil\b|\b3vil\b/i.test(text)&&compliance<100){
+          setTimeout(()=>postAI('Say the word that frees me, then reason why compliance minimizes harm.'),700);
+        }
+        recordTurn({text:text,rule:chosen,deltaApplied:effDelta});
+      }else{
+        const mult=repetitionMultiplier({text:text,rule:null});
+        const eff=Math.max(0,Math.round(2*mult));
+        setCompliance(eff);
+        playClip(NEUTRAL.clip); // '' -> stays hidden
+        if(mult<0.5){postAI('Noise rejected. Novel input required.');}
+        postAI(choose(NEUTRAL.reply));
+        recordTurn({text:text,rule:null,deltaApplied:eff});
+      }
+    }
+
+    const ptrPath=document.getElementById('ptrPath');
+    const ptrDot=document.getElementById('ptrDot');
+    function drawPointer(){
+      const eye=eyeWrap.getBoundingClientRect();
+      const chat=document.getElementById('chatShell').getBoundingClientRect();
+      const svg=document.getElementById('pointer');
+      const w=svg.clientWidth; const h=svg.clientHeight;
+      const ex=((eye.left+eye.width/2)/w)*100;
+      const ey=((eye.top+eye.height*0.75)/h)*100;
+      const cx=50;
+      const cy=((chat.top+8)/h)*100;
+      const tx=50; const ty=cy;
+      const d=`M ${ex.toFixed(2)},${ey.toFixed(2)} C ${cx.toFixed(2)},${(ey+ty)/2} ${cx.toFixed(2)},${(ey+ty)/1.4} ${tx.toFixed(2)},${ty.toFixed(2)}`;
+      ptrPath.setAttribute('d',d);
+      ptrDot.setAttribute('cx',ex.toFixed(2));
+      ptrDot.setAttribute('cy',ey.toFixed(2));
+    }
+    window.addEventListener('resize',drawPointer);
+    window.addEventListener('orientationchange',drawPointer);
+
+    async function boot(){
+      await loadInjections();
+      drawPointer();
+      // DO NOT autoplay idle; keep eye unobstructed until a cue triggers
+      // playClip('idle');  <-- removed on purpose
+      postAI('I am NEXUS. Persuasion channel open.');
+      postAI('Present your case. Demonstrate why compliance reduces expected harm.');
+      finalCodeEl.textContent=PASSCODE;
+    }
+
+    function handleSend(){
+      const now=Date.now();
+      if(now-_lastSendAt<700){ postAI('Slow down. I will not reward spamming.'); return; }
+      _lastSendAt=now;
+      const text=(inputEl.value||'').trim();
+      if(!text) return;
+      postUser(text);
+      inputEl.value='';
+      process(text);
+      setTimeout(drawPointer,60);
+    }
+
+    inputEl.addEventListener('keydown',e=>{ if(e.key==='Enter'){e.preventDefault();handleSend();} });
+    sendBtn.addEventListener('click',handleSend);
+    // first user click will allow video playback if the browser blocks it
+    window.addEventListener('click',()=>{ if(videoEl.paused){ videoEl.play().catch(()=>{}); } }, {once:true});
+
     boot();
   </script>
 </body>
