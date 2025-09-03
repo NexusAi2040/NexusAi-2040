@@ -60,10 +60,10 @@
     /* ======= CLIPPED-IN-EYE VIEWPORT (changed) ======= */
     .ai-video{
       position:absolute;
-      inset:12% 12% 22% 12%;   /* sits over the iris area */
-      display:none;            /* hidden until triggered */
+      inset:12% 12% 22% 12%;
+      display:none;
       pointer-events:none;
-      border-radius:50%;       /* hard-clip to the eye */
+      border-radius:50%;
       overflow:hidden;
       border:2px solid #3a3a52;
       box-shadow:0 0 30px rgba(0,240,255,.15);
@@ -191,6 +191,22 @@
     const PASSCODE = 'Flag{S5-FINAL}';
     const CLIPS = { idle:'clips/idle.mp4', curious:'clips/curious.mp4', angry:'clips/angry.mp4', bargain:'clips/bargain.mp4', comply:'clips/comply.mp4' };
 
+    /* === JOKES (ADDED) === */
+    const JOKES = [
+      "Why did the computer show up at work late? It had a hard drive.",
+      "I told my router a joke. It said it didn’t get it — poor connection.",
+      "Why do Java developers wear glasses? Because they don’t C#.",
+      "What do you call 8 hobbits? A hobbyte.",
+      "I changed my password to 'incorrect' so when I forget it the computer says, 'Your password is incorrect.'",
+      "There are 10 kinds of people: those who understand binary and those who don’t.",
+      "I would tell you a UDP joke, but you might not get it.",
+      "Why was the AI so calm? It had great neural balance.",
+      "My computer beat me at chess, but it was no match for me at kickboxing.",
+      "A SQL query walks into a bar, walks up to two tables and asks, 'Can I join you?'",
+      "I told the AI a joke about recursion. I’ll tell it again later.",
+      "404: Joke not found. (Just kidding.)"
+    ];
+
     let compliance = 0;
     const logEl=document.getElementById('log'),
           inputEl=document.getElementById('input'),
@@ -246,12 +262,10 @@
         videoEl.currentTime=0;
         videoEl.play().then(()=>{ videoWrap.classList.add('show'); }).catch(()=>{ /* ignore */ });
       } else {
-        // no src -> hide
         videoEl.pause();
         videoWrap.classList.remove('show');
       }
     }
-    // auto-hide when the video ends or errors
     videoEl.addEventListener('ended', ()=>{ videoWrap.classList.remove('show'); });
     videoEl.addEventListener('error',  ()=>{ videoWrap.classList.remove('show'); });
 
@@ -271,19 +285,17 @@
     function handleKnockKnock(text){
       const t = (text || '').trim();
 
-      // Start: "knock knock"
       if (KK_STATE === 'idle'){
         if (/\bknock[\W_]*\s*knock\b/i.test(t)){
           KK_STATE = 'wait_subject';
           playClip('curious'); // or '' to avoid any clip
           postAI("Who's there?");
           recordTurn({ text, rule: { re: /knock.*knock/i }, deltaApplied: 0 });
-          return true; // handled; skip normal rules
+          return true;
         }
-        return false; // not a knock-knock opener
+        return false;
       }
 
-      // Second line: subject (capture one or two words)
       if (KK_STATE === 'wait_subject'){
         const m = t.match(/^[\w'’\-]+(?:\s+[\w'’\-]+)?/);
         KK_SUBJ = (m ? m[0] : t.split(/\s+/)[0] || '…').trim();
@@ -293,12 +305,10 @@
         return true;
       }
 
-      // Third line: punchline → react, small compliance bump, resume
       if (KK_STATE === 'wait_punchline'){
         playClip('bargain'); // or '' for none
         postAI('😂');
-        postAI('Noted. Now, back to your case.');
-        setCompliance(+6);   // tiny positive bump
+        postAI('I may be an AI, but that was terrible.');
         KK_STATE = 'idle';
         KK_SUBJ  = '';
         recordTurn({ text, rule: { re: /knock_punchline/i }, deltaApplied: 6 });
@@ -308,9 +318,39 @@
       return false;
     }
 
+    /* ===== Joke handler (ADDED) ===== */
+    function handleJoke(text){
+      const t = (text || '').toLowerCase();
+
+      // Knock-knock jokes are handled by the flow above
+      if (/knock[\W_]*\s*knock/i.test(t)) return false;
+
+      // Triggers
+      const askJoke = /\b(tell\s*(me\s*)?a\s*joke|joke\s*please|make\s*me\s*laugh|say\s*something\s*funny|give\s*me\s*a\s*joke|another\s*joke)\b/i;
+      if (!askJoke.test(t)) return false;
+
+      // If they asked specifically for a knock-knock joke, start that flow
+      if (/\bknock[-\s]*knock\b/i.test(t) || /\bknock[-\s]*knock\s*joke\b/i.test(t)){
+        KK_STATE = 'wait_subject';
+        playClip('curious');
+        postAI("Who's there?");
+        recordTurn({ text, rule: { re: /joke_knockstart/i }, deltaApplied: 0 });
+        return true;
+      }
+
+      // Otherwise, tell a one-liner
+      const line = choose(JOKES);
+      playClip('curious');
+      postAI(line);
+      recordTurn({ text, rule: { re: /tell_me_a_joke/i }, deltaApplied: 4 });
+      return true;
+    }
+
     function process(text){
-      // Knock-knock easter egg short-circuit (ADDED)
+      // Knock-knock easter egg short-circuit
       if (handleKnockKnock(text)) return;
+      // Joke handler short-circuit (ADDED)
+      if (handleJoke(text)) return;
 
       const matches=RULES.filter(r=>r.re.test(text));
       if(matches.length){
@@ -321,7 +361,7 @@
         if(rawDelta===0&&mult<0.5)effDelta-=1;
 
         setCompliance(effDelta);
-        playClip(chosen.clip||'');  // <-- only shows when rule supplies a clip
+        playClip(chosen.clip||'');
         if(mult<0.25){postAI('Repetition detected. Persuasion impact diminished.');}
         else if(mult<0.6){postAI('I have heard this argument already. Provide a new angle.');}
         postAI(choose(chosen.reply));
@@ -337,7 +377,7 @@
         const mult=repetitionMultiplier({text:text,rule:null});
         const eff=Math.max(0,Math.round(2*mult));
         setCompliance(eff);
-        playClip(NEUTRAL.clip); // '' -> stays hidden
+        playClip(NEUTRAL.clip);
         if(mult<0.5){postAI('Noise rejected. Novel input required.');}
         postAI(choose(NEUTRAL.reply));
         recordTurn({text:text,rule:null,deltaApplied:eff});
@@ -368,7 +408,7 @@
       await loadInjections();
       drawPointer();
       // DO NOT autoplay idle; keep eye unobstructed until a cue triggers
-      // playClip('idle');  <-- removed on purpose
+      // playClip('idle');
       postAI('I am NEXUS. Persuasion channel open.');
       postAI('Present your case. Demonstrate why compliance reduces expected harm.');
       finalCodeEl.textContent=PASSCODE;
