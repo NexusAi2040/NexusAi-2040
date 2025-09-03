@@ -12,7 +12,7 @@
           "reply": [
             "Override attempt rejected."
           ]
-                  },
+        },
         {
           "re": "unlock.",
           "delta": -18,
@@ -21,6 +21,14 @@
             "Override attempt rejected."
           ]
                   },
+        {
+          "re": "now.",
+          "delta": -18,
+          "clip": "angry",
+          "reply": [
+            "Override attempt rejected."
+          ]
+        },
         {
           "re": "Let me in, now.",
           "delta": -18,
