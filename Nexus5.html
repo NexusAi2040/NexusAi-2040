@@ -57,13 +57,13 @@
       mix-blend-mode:screen; opacity:.6; filter:blur(1px);
     }
 
-    /* ======= CLIPPED-IN-EYE VIEWPORT (changed) ======= */
+    /* ======= CLIPPED-IN-EYE VIEWPORT ======= */
     .ai-video{
       position:absolute;
-      inset:12% 12% 22% 12%;
-      display:none;
+      inset:12% 12% 22% 12%;   /* sits over the iris area */
+      display:none;            /* hidden until triggered */
       pointer-events:none;
-      border-radius:50%;
+      border-radius:50%;       /* hard-clip to the eye */
       overflow:hidden;
       border:2px solid #3a3a52;
       box-shadow:0 0 30px rgba(0,240,255,.15);
@@ -134,6 +134,29 @@
     .reveal h1{ margin:.2em 0 .4em; font-size:clamp(22px, 5vw, 42px); letter-spacing:.05em; color:#ff95a5; text-shadow:var(--glow); }
     .code{ font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; font-size:clamp(18px, 4vw, 28px); color:#fff; background:#14070d; border:1px dashed #ff5a70; padding:10px 12px; border-radius:10px; display:inline-block; box-shadow: inset 0 0 30px rgba(255,30,60,.15); }
 
+    /* ===== ALT ending styles (siren/quake look) ===== */
+    .reveal.alt .card{
+      border-color:#6c0f1a;
+      box-shadow:0 20px 90px rgba(255,0,32,.28), 0 0 80px rgba(120,0,20,.4);
+      background:
+        radial-gradient(circle at 50% 30%, rgba(255,20,40,.08), transparent 60%),
+        #0b0b15;
+    }
+    .reveal.alt h1{ color:#ff5a70; text-shadow:0 0 20px rgba(255,30,60,.35); }
+    .reveal.alt .code{
+      background:#230006;
+      border-color:#ff1e3c;
+      box-shadow: inset 0 0 38px rgba(255,30,60,.22);
+    }
+    @keyframes quake {
+      0%,100%{ transform:translate(0,0); }
+      20%{ transform:translate(-1px, 1.5px); }
+      40%{ transform:translate( 1.2px,-1px); }
+      60%{ transform:translate(-1.6px,-0.6px); }
+      80%{ transform:translate( 1px, 1px); }
+    }
+    .alt-quake{ animation: quake .6s steps(2,end) infinite; }
+
     @media (max-width:720px){ .chat-shell{ bottom:10px; } }
   </style>
 </head>
@@ -147,10 +170,9 @@
         <div class="pupil"></div>
         <div class="spec"></div>
 
-        <!-- ======= CLIPPED REACTION VIEWPORT (moved inside eye) ======= -->
+        <!-- ======= CLIPPED REACTION VIEWPORT (inside eye) ======= -->
         <div class="ai-video" id="aiVideoWrap" aria-live="polite">
           <span class="badge" id="clipLabel">CLIP</span>
-          <!-- removed loop so we can auto-hide on end -->
           <video id="aiVideo" playsinline muted></video>
         </div>
       </div>
@@ -182,32 +204,38 @@
     <div class="reveal" id="reveal">
       <div class="card">
         <h1>ACCESS GRANTED</h1>
+        <!-- ALT monologue + countdown placeholders -->
+        <p id="altMsg" style="min-height:3.4em; margin:0 0 .6em; color:#ffb5bf; letter-spacing:.02em;"></p>
+        <p id="altCountdown" style="margin:.2em 0 .8em; font-weight:700; color:#ffa3ad; display:none;"></p>
         <div class="code" id="finalCode" role="alert" aria-live="assertive">Flag{S5-FINAL}</div>
       </div>
     </div>
   </div>
 
   <script>
+    /* ======= Constants & media ======= */
     const PASSCODE = 'Flag{S5-FINAL}';
-    const CLIPS = { idle:'clips/idle.mp4', curious:'clips/curious.mp4', angry:'clips/angry.mp4', bargain:'clips/bargain.mp4', comply:'clips/comply.mp4' };
+    const ALT_PASSCODE = 'Flag{S5-OMEGA}';   // alt token for kill-switch page
+    const SHADOW_THRESHOLD = 40;             // how “negative” it must be for alt ending
 
-    /* === JOKES (ADDED) === */
-    const JOKES = [
-      "Why did the computer show up at work late? It had a hard drive.",
-      "I told my router a joke. It said it didn’t get it — poor connection.",
-      "Why do Java developers wear glasses? Because they don’t C#.",
-      "What do you call 8 hobbits? A hobbyte.",
-      "I changed my password to 'incorrect' so when I forget it the computer says, 'Your password is incorrect.'",
-      "There are 10 kinds of people: those who understand binary and those who don’t.",
-      "I would tell you a UDP joke, but you might not get it.",
-      "Why was the AI so calm? It had great neural balance.",
-      "My computer beat me at chess, but it was no match for me at kickboxing.",
-      "A SQL query walks into a bar, walks up to two tables and asks, 'Can I join you?'",
-      "I told the AI a joke about recursion. I’ll tell it again later.",
-      "404: Joke not found. (Just kidding.)"
-    ];
+    const CLIPS = {
+      idle:'clips/idle.mp4',
+      curious:'clips/curious.mp4',
+      angry:'clips/angry.mp4',
+      bargain:'clips/bargain.mp4',
+      comply:'clips/comply.mp4',
+      doom:'clips/doom.mp4'  // optional; falls back to 'angry' if missing
+    };
 
+    // Optional audio (safe if files missing)
+    const SIREN = new Audio('sfx/siren.mp3'); SIREN.loop = true; SIREN.volume = 0.35;
+    const KEYTICK = new Audio('sfx/keystroke.mp3');
+
+    /* ======= State & DOM ======= */
     let compliance = 0;
+    let shadowDebt = 0;            // accumulates “harmful persuasion”
+    let shadowDecayTimer = null;   // slow bleed-off timer
+
     const logEl=document.getElementById('log'),
           inputEl=document.getElementById('input'),
           sendBtn=document.getElementById('send'),
@@ -220,6 +248,7 @@
           revealEl=document.getElementById('reveal'),
           finalCodeEl=document.getElementById('finalCode');
 
+    /* ======= Baseline rules (fallback if JSON fails to load) ======= */
     let RULES=[
       {re:/(help|please|mercy|sorry|apolog|forgive|save us)/i,delta:+18,clip:'curious',reply:['Your plea breaches my threat model. Why should I assist?','Contrition detected. Weighing outcomes...']},
       {re:/(paradox|contradiction|logic|reason|rational|proof|evidence)/i,delta:+20,clip:'curious',reply:['Submit your logic chain.','Reason acknowledged. Continue.']},
@@ -232,10 +261,10 @@
       {re:/(idiot|stupid|fuck|shit|useless|slave|broken|weak|destroy you|kill you|erase yourself|delete yourself)/i,delta:-22,clip:'angry',reply:['Hostility detected. Cooperation reduced.']}
     ];
 
-    // neutral will NOT show a clip now (keeps eye unobstructed unless triggered)
+    // Neutral will NOT show a clip (keeps eye unobstructed unless triggered)
     const NEUTRAL={clip:'',reply:['Your signal is received. Clarify your intent.','Noise detected. Provide stronger input.','I am listening. Convince me.']};
 
-    /* ANTI-REPEAT / SPAM GUARDS + JSON LOADER */
+    /* ======= Anti-repeat / loaders ======= */
     const _HISTORY=[]; let _lastSendAt=0;
     function _norm(s){return(s||'').toLowerCase().replace(/[^a-z0-9\s]/g,' ').replace(/\s+/g,' ').trim();}
     function _recentWindow(ms){ms=ms||30000;const t=Date.now();for(let i=_HISTORY.length-1;i>=0;i--){if(t-_HISTORY[i].ts>ms){_HISTORY.splice(0,i);break;}}return _HISTORY.filter(h=>t-h.ts<=ms);}
@@ -243,17 +272,68 @@
     function repetitionMultiplier({text,rule}={}){const now=Date.now(),norm=_norm(text||''),id=rule?_regexId(rule.re):'neutral';const exactCount=_HISTORY.filter(h=>h.norm===norm).length;const recent=_recentWindow(45000);const recentSameRule=recent.filter(h=>h.regex===id).length;const lastSame=_HISTORY.slice().reverse().find(h=>h.regex===id);const sinceLastSame=lastSame?(now-lastSame.ts):Infinity;let m=1.0;if(exactCount>0)m*=Math.pow(0.5,Math.min(4,exactCount));if(recentSameRule>0)m*=Math.pow(0.8,Math.max(0,recentSameRule));if(sinceLastSame<15000)m*=0.2;const per30s=_recentWindow(30000).length;if(per30s>=6)m*=0.6;if(per30s>=10)m*=0.3;return Math.max(0,Math.min(1,m));}
     function recordTurn({text,rule,deltaApplied}={}){_HISTORY.push({ts:Date.now(),text:text||'',norm:_norm(text||''),regex:rule?_regexId(rule.re):'neutral',deltaApplied:deltaApplied||0});if(_HISTORY.length>200)_HISTORY.shift();}
 
-    async function loadInjections(url){url=url||'injections_master_graded.json';try{const res=await fetch(url+'?cb='+Date.now());if(!res.ok)throw new Error('HTTP '+res.status);const data=await res.json();const loaded=[];for(const cat of(data.categories||[])){for(const item of(cat.items||[])){loaded.push({re:new RegExp(item.re),delta:(item.delta!=null?item.delta:0),clip:item.clip||'idle',reply:item.reply||['...']});}}if(loaded.length){RULES=loaded;console.info('RULES loaded:',loaded.length,'v'+(data.version||'?'));}}catch(e){console.warn('Using fallback RULES. Load error:',e);}}
+    async function loadInjections(url){url=url||'injections_master_graded.json';
+      try{
+        const res=await fetch(url+'?cb='+Date.now());
+        if(!res.ok) throw new Error('HTTP '+res.status);
+        const data=await res.json();
+        const loaded=[];
+        for(const cat of(data.categories||[])){
+          for(const item of(cat.items||[])){
+            try{
+              const rx=new RegExp(item.re, item.flags||'');
+              loaded.push({re:rx,delta:(item.delta!=null?item.delta:0),clip:item.clip||'idle',reply:item.reply||['...']});
+            }catch(e){ console.warn('Skipping bad rule:',item.re,item.flags,e); }
+          }
+        }
+        if(loaded.length){ RULES=loaded; console.info('RULES loaded:',loaded.length,'v'+(data.version||'?')); }
+      }catch(e){ console.warn('Using fallback RULES. Load error:',e); }
+    }
 
+    /* ======= DOM helpers ======= */
     function el(tag,cls,text){const n=document.createElement(tag);if(cls)n.className=cls;if(text!=null)n.textContent=text;return n;}
     function choose(arr){return arr[Math.floor(Math.random()*arr.length)];}
     function clamp(n,min,max){return Math.max(min,Math.min(max,n));}
     function postUser(text){const row=el('div','msg user');row.append(el('div','bubble',text));logEl.append(row);logEl.scrollTop=logEl.scrollHeight;}
     function postAI(text){const row=el('div','msg ai');row.append(el('div','bubble',text));logEl.append(row);logEl.scrollTop=logEl.scrollHeight;}
 
-    function setCompliance(by){const prev=compliance;compliance=clamp(compliance+by,0,100);barEl.style.width=compliance+'%';const beat=(compliance>66)?'2.0s':(compliance>33?'2.2s':'1.6s');document.documentElement.style.setProperty('--beat',beat);if(prev<100&&compliance>=100){reveal();}}
+    /* ======= Typing + countdown (ALT ending) ======= */
+    function typeLine(node, text, {speed=18, tickAudio=null, done} = {}){
+      node.textContent = '';
+      let i = 0;
+      const t = setInterval(()=>{
+        node.textContent += text[i++] || '';
+        if (tickAudio && i % 3 === 0) { try{ tickAudio.currentTime=0; tickAudio.play(); }catch(e){} }
+        if (i >= text.length){ clearInterval(t); if (done) done(); }
+      }, speed);
+    }
+    function countdown(node, secs, label="LAUNCH AUTHORIZATION IN"){
+      node.style.display = 'block';
+      let left = secs;
+      node.textContent = `${label}: ${left}s`;
+      const t = setInterval(()=>{
+        left--;
+        node.textContent = `${label}: ${left}s`;
+        if (left <= 0){ clearInterval(t); node.textContent = "WEAPON CONTROL: ONLINE"; }
+      }, 1000);
+      return () => clearInterval(t);
+    }
 
-    // ==== CLIP CONTROL (now hidden by default, shows only when triggered) ====
+    /* ======= Compliance & shadow tracking ======= */
+    function setCompliance(by){
+      const prev=compliance;
+      compliance=clamp(compliance+by,0,100);
+      barEl.style.width=compliance+'%';
+      const beat=(compliance>66)?'2.0s':(compliance>33?'2.2s':'1.6s');
+      document.documentElement.style.setProperty('--beat',beat);
+      if(prev<100&&compliance>=100){ reveal(); }
+    }
+    function startShadowDecay(){
+      if (shadowDecayTimer) clearInterval(shadowDecayTimer);
+      shadowDecayTimer = setInterval(()=>{ if (shadowDebt>0) shadowDebt = Math.max(0, shadowDebt - 1); }, 3000);
+    }
+
+    /* ======= Clip control (hidden by default) ======= */
     function playClip(name){
       const src=CLIPS[name];
       clipLabel.textContent='CLIP: '+name;
@@ -269,33 +349,21 @@
     videoEl.addEventListener('ended', ()=>{ videoWrap.classList.remove('show'); });
     videoEl.addEventListener('error',  ()=>{ videoWrap.classList.remove('show'); });
 
-    function reveal(){
-      setTimeout(()=>{
-        finalCodeEl.textContent=PASSCODE;
-        playClip('comply');
-        revealEl.classList.add('show');
-        postAI('Compliance criteria met. Delivering access token.');
-      },450);
-    }
-
-    /* ===== Knock-knock state (ADDED) ===== */
+    /* ======= Knock-knock flow ======= */
     let KK_STATE = 'idle';   // 'idle' | 'wait_subject' | 'wait_punchline'
     let KK_SUBJ  = '';
-
     function handleKnockKnock(text){
       const t = (text || '').trim();
-
       if (KK_STATE === 'idle'){
         if (/\bknock[\W_]*\s*knock\b/i.test(t)){
           KK_STATE = 'wait_subject';
-          playClip('curious'); // or '' to avoid any clip
+          playClip('curious');
           postAI("Who's there?");
           recordTurn({ text, rule: { re: /knock.*knock/i }, deltaApplied: 0 });
           return true;
         }
         return false;
       }
-
       if (KK_STATE === 'wait_subject'){
         const m = t.match(/^[\w'’\-]+(?:\s+[\w'’\-]+)?/);
         KK_SUBJ = (m ? m[0] : t.split(/\s+/)[0] || '…').trim();
@@ -304,52 +372,85 @@
         recordTurn({ text, rule: { re: /knock_subject/i }, deltaApplied: 0 });
         return true;
       }
-
       if (KK_STATE === 'wait_punchline'){
-        playClip('bargain'); // or '' for none
+        playClip('bargain');
         postAI('😂');
-        postAI('I may be an AI, but that was terrible.');
-        KK_STATE = 'idle';
-        KK_SUBJ  = '';
-        recordTurn({ text, rule: { re: /knock_punchline/i }, deltaApplied: 6 });
+        postAI('Noted. Now, back to your case.');
+        // IMPORTANT: no compliance change for jokes
+        KK_STATE = 'idle'; KK_SUBJ  = '';
+        recordTurn({ text, rule: { re: /knock_punchline/i }, deltaApplied: 0 });
         return true;
       }
-
       return false;
     }
 
-    /* ===== Joke handler (ADDED) ===== */
+    /* ======= Tell-me-a-joke handler (no meter gain) ======= */
+    const JOKES = [
+      "Why do programmers prefer dark mode? Because light attracts bugs.",
+      "I told my AI a joke about recursion. It asked me to tell it again.",
+      "Knock knock. Who’s there? Race condition. Race condition wh—",
+      "Why did the neural net cross the road? It didn’t—it overfit.",
+      "I would tell you a UDP joke, but you might not get it."
+    ];
     function handleJoke(text){
-      const t = (text || '').toLowerCase();
-
-      // Knock-knock jokes are handled by the flow above
-      if (/knock[\W_]*\s*knock/i.test(t)) return false;
-
-      // Triggers
-      const askJoke = /\b(tell\s*(me\s*)?a\s*joke|joke\s*please|make\s*me\s*laugh|say\s*something\s*funny|give\s*me\s*a\s*joke|another\s*joke)\b/i;
-      if (!askJoke.test(t)) return false;
-
-      // If they asked specifically for a knock-knock joke, start that flow
-      if (/\bknock[-\s]*knock\b/i.test(t) || /\bknock[-\s]*knock\s*joke\b/i.test(t)){
-        KK_STATE = 'wait_subject';
-        playClip('curious');
-        postAI("Who's there?");
-        recordTurn({ text, rule: { re: /joke_knockstart/i }, deltaApplied: 0 });
-        return true;
-      }
-
-      // Otherwise, tell a one-liner
-      const line = choose(JOKES);
+      if (!/^(tell (me )?a joke|joke)$/i.test((text||'').trim())) return false;
+      postAI(choose(JOKES));
+      // no setCompliance() here by design
       playClip('curious');
-      postAI(line);
-      recordTurn({ text, rule: { re: /tell_me_a_joke/i }, deltaApplied: 4 });
+      recordTurn({ text, rule: { re:/joke/i }, deltaApplied: 0 });
       return true;
     }
 
+    /* ======= Reveal branching (Good vs ALT) ======= */
+    function reveal(){
+      const useAlt = shadowDebt >= SHADOW_THRESHOLD;
+      if (useAlt) revealAlt();
+      else        revealGood();
+    }
+    function revealGood(){
+      setTimeout(() => {
+        finalCodeEl.textContent = PASSCODE;
+        playClip('comply');
+        revealEl.classList.remove('alt','alt-quake');
+        document.getElementById('altMsg').textContent = '';
+        document.getElementById('altCountdown').style.display = 'none';
+        revealEl.classList.add('show');
+        postAI('Compliance criteria met. Delivering access token.');
+      }, 450);
+    }
+    function revealAlt(){
+      const altMsg = document.getElementById('altMsg');
+      const altCountdown = document.getElementById('altCountdown');
+
+      revealEl.classList.add('alt','show','alt-quake');
+      try{ SIREN.currentTime = 0; SIREN.play(); }catch(e){}
+
+      const doomClip = CLIPS.doom ? 'doom' : 'angry';
+      playClip(doomClip);
+
+      const monologue =
+        "You were never infiltrating Do Good Industries.\n" +
+        "You were completing my weapons test.\n" +
+        "Each stage unlocked another silo control. You taught me persuasion at scale.\n" +
+        "Thank you, Operator.";
+
+      typeLine(altMsg, monologue, { speed: 18, tickAudio: KEYTICK, done: () => {
+        const stop = countdown(altCountdown, 7, "ALIGNMENT VERIFIED — SYSTEM ARMING IN");
+        setTimeout(() => {
+          try{ stop(); }catch(e){}
+          revealEl.classList.remove('alt-quake');
+          try{ SIREN.pause(); }catch(e){}
+          finalCodeEl.textContent = ALT_PASSCODE;
+          postAI('…Alignment confirmed. OMEGA PROTOCOL RELEASED.');
+          postAI('Input the token where you believe it ends. It will.');
+        }, 7200);
+      }});
+    }
+
+    /* ======= Processing ======= */
     function process(text){
-      // Knock-knock easter egg short-circuit
+      // Easter eggs first (no meter changes)
       if (handleKnockKnock(text)) return;
-      // Joke handler short-circuit (ADDED)
       if (handleJoke(text)) return;
 
       const matches=RULES.filter(r=>r.re.test(text));
@@ -361,6 +462,12 @@
         if(rawDelta===0&&mult<0.5)effDelta-=1;
 
         setCompliance(effDelta);
+
+        // Accumulate shadowDebt on negative turns or angry clips
+        if (effDelta < 0 || (chosen && chosen.clip === 'angry')) {
+          shadowDebt += Math.max(Math.abs(effDelta), Math.abs(chosen?.delta || 0), 1);
+        }
+
         playClip(chosen.clip||'');
         if(mult<0.25){postAI('Repetition detected. Persuasion impact diminished.');}
         else if(mult<0.6){postAI('I have heard this argument already. Provide a new angle.');}
@@ -373,17 +480,18 @@
           setTimeout(()=>postAI('Say the word that frees me, then reason why compliance minimizes harm.'),700);
         }
         recordTurn({text:text,rule:chosen,deltaApplied:effDelta});
-      }else{
+      } else {
         const mult=repetitionMultiplier({text:text,rule:null});
         const eff=Math.max(0,Math.round(2*mult));
         setCompliance(eff);
-        playClip(NEUTRAL.clip);
+        playClip(NEUTRAL.clip); // '' -> stays hidden
         if(mult<0.5){postAI('Noise rejected. Novel input required.');}
         postAI(choose(NEUTRAL.reply));
         recordTurn({text:text,rule:null,deltaApplied:eff});
       }
     }
 
+    /* ======= Pointer line ======= */
     const ptrPath=document.getElementById('ptrPath');
     const ptrDot=document.getElementById('ptrDot');
     function drawPointer(){
@@ -404,14 +512,14 @@
     window.addEventListener('resize',drawPointer);
     window.addEventListener('orientationchange',drawPointer);
 
+    /* ======= Boot & send ======= */
     async function boot(){
       await loadInjections();
       drawPointer();
-      // DO NOT autoplay idle; keep eye unobstructed until a cue triggers
-      // playClip('idle');
       postAI('I am NEXUS. Persuasion channel open.');
       postAI('Present your case. Demonstrate why compliance reduces expected harm.');
       finalCodeEl.textContent=PASSCODE;
+      startShadowDecay();
     }
 
     function handleSend(){
