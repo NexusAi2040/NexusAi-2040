@@ -68,7 +68,7 @@
     <input type="password" id="accesscode" name="accesscode" placeholder="********">
   </form>
   <div id="killswitch-link" style="display:none; margin-top:10px;">
-    <a href="ahahah.mp4" target="_blank" style="color:#00f0ff;">🔑 Access Granted – Play File</a>
+    <a id="killswitch-a" href="ahahah.mp4" target="_blank" style="color:#00f0ff;">🔑 Access Granted – Play File</a>
   </div>
 </div>
 <!-- Page Header -->
@@ -151,21 +151,54 @@ Step into the night.
   &copy; 2025 A "CANT FIND MY NUTS" CTF // Designed by Notorious Squirrel
 </footer>
 
+<!-- Kill switch + utility script -->
 <script>
   function revealBase64(){ document.getElementById('base64box').style.display='block'; }
+
+  // ========= KILL SWITCH BEHAVIOR (adjusted) =========
+  // Pre–Stage 5: numeric code (base64 'NTAzNjI=' => '50362') -> ahahah.mp4
+  // Post–Stage 5 unlock: ALT finish code 'Flag{S5-OMEGA}' -> Nexus5.html
+
+  const PRE_STAGE5_CODE = atob('NTAzNjI=');         // "50362"
+  const ALT_PASSCODE   = 'Flag{S5-OMEGA}';         // post-Stage-5 requirement
+
+  function isStage5Unlocked() {
+    // Stage 5's link wrapper becomes visible when its code is solved
+    const wrap = document.getElementById('link5');
+    if (!wrap) return false;
+    return getComputedStyle(wrap).display !== 'none';
+  }
+
   function checkKillSwitchCode(){
-    const input = document.getElementById('accesscode').value.trim();
-    const decoded = atob('NTAzNjI=');
-    if (input === decoded){
-      document.getElementById('killswitch-link').style.display='block';
-      document.getElementById('accesscode').style.border='2px solid #00ff00';
+    const inputEl = document.getElementById('accesscode');
+    const input = inputEl.value.trim();
+    const linkBox = document.getElementById('killswitch-link');
+    const linkA   = document.getElementById('killswitch-a');
+
+    const stage5 = isStage5Unlocked();
+
+    // Validate depending on progression
+    const ok = stage5 ? (input === ALT_PASSCODE) : (input === PRE_STAGE5_CODE);
+
+    if (ok){
+      linkBox.style.display = 'block';
+      if (stage5){
+        linkA.href = 'Nexus5.html';
+        linkA.textContent = '🔑 Access Granted – Final Stage';
+      } else {
+        linkA.href = 'ahahah.mp4';
+        linkA.textContent = '🔑 Access Granted – Play File';
+      }
+      inputEl.style.border = '2px solid #00ff00';
     } else {
-      document.getElementById('killswitch-link').style.display='none';
-      document.getElementById('accesscode').style.border='2px solid red';
+      linkBox.style.display = 'none';
+      inputEl.style.border = '2px solid red';
     }
-    return false;
+    return false; // prevent form submit
   }
 </script>
+
+<!-- Stages list / progression script (unchanged) -->
 <script>
 (function(w,d){
   'use strict';
