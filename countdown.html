@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>NEXUS AI 2040 — Countdown</title>
+  <meta name="description" content="Countdown to NEXUS AI 2040 — the awakening. Enter when the clock hits zero." />
+  <style>
+    :root{
+      --bg:#06060a; --bg2:#0b0b14; --ink:#d0d3da; --muted:#9aa1ad;
+      --red:#ff1e3c; --cyan:#00f0ff; --panel:#0f0f18;
+      --glow-r:0 0 12px var(--red), 0 0 42px rgba(255,30,60,.35);
+      --glow-c:0 0 10px var(--cyan), 0 0 34px rgba(0,240,255,.30);
+      --maxw:1100px;
+    }
+
+    html,body{height:100%;}
+    *{box-sizing:border-box}
+    body{
+      margin:0; color:var(--ink);
+      font-family: ui-sans-serif, system-ui, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      line-height:1.5; overflow-x:hidden; background:#000;
+    }
+
+    /* Background Video / Image */
+    #bgvid {
+      position: fixed; top:0; left:0; width:100%; height:100%;
+      object-fit: cover; z-index:-2; opacity:1; filter:none;
+    }
+
+    .container{max-width:var(--maxw); margin-inline:auto; padding:clamp(16px, 3vw, 32px);} 
+    a{color:var(--cyan); text-decoration:none}
+    a:hover{filter:brightness(1.15); text-shadow:var(--glow-c)}
+
+    /* Subtle FX */
+    .fx{position:fixed; inset:0; pointer-events:none; z-index:0}
+    .pillar{position:absolute; width:8px; height:56vh; top:18vh; filter:blur(.2px)}
+    .pillar.left{left:4vw; background:linear-gradient(180deg, transparent, var(--cyan), transparent); box-shadow:0 0 18px var(--cyan), 0 0 42px rgba(0,240,255,.45)}
+    .pillar.right{right:4vw; background:linear-gradient(180deg, transparent, var(--red), transparent); box-shadow:0 0 18px var(--red), 0 0 42px rgba(255,30,60,.45)}
+    .fog{position:absolute; width:60vw; height:40vh; bottom:6vh; left:20vw; filter:blur(34px) saturate(120%); background:
+      radial-gradient(40% 60% at 30% 50%, rgba(255,30,60,.22), transparent 60%),
+      radial-gradient(40% 60% at 70% 60%, rgba(0,240,255,.22), transparent 60%);
+      animation:fogroll 40s ease-in-out infinite alternate}
+    @keyframes fogroll{from{transform:translateX(-2vw)}to{transform:translateX(2vw)}}
+
+    header{position:sticky; top:0; z-index:60; background:linear-gradient(180deg, rgba(6,6,10,.85), rgba(6,6,10,.6) 80%, transparent); backdrop-filter: blur(6px); border-bottom:1px solid rgba(255,30,60,.22)}
+    .brand{display:flex; align-items:center; gap:12px; font-weight:800; letter-spacing:.06em}
+    .brand .dot{width:10px;height:10px;border-radius:999px;background:var(--red); box-shadow:var(--glow-r)}
+    nav{display:flex; gap:18px; align-items:center}
+    .navwrap{display:flex; justify-content:space-between; align-items:center}
+
+    .hero{position:relative; min-height:100svh; display:grid; place-items:center; text-align:center; z-index:1}
+    .glitch{position:relative; display:inline-block; font-size:clamp(36px, 10vw, 120px); font-weight:900; letter-spacing:.08em; text-transform:uppercase; color:#fff; text-shadow: var(--glow-r), 0 0 2px #fff; animation:glitchshift 4s steps(30) infinite}
+    .glitch::before, .glitch::after{content:attr(data-text); position:absolute; inset:0; pointer-events:none; mix-blend-mode:screen}
+    .glitch::before{color:var(--red); transform:translate(-2px,0); clip-path:polygon(0 0,100% 0,100% 45%,0 45%); filter:drop-shadow(0 0 8px var(--red))}
+    .glitch::after{color:var(--cyan); transform:translate(2px,0); clip-path:polygon(0 55%,100% 55%,100% 100%,0 100%); filter:drop-shadow(0 0 8px var(--cyan))}
+    @keyframes glitchshift{0%,100%{transform:translate(0,0)}20%{transform:translate(1px,-.5px)}40%{transform:translate(-1px,.5px)}60%{transform:translate(1px,.5px)}80%{transform:translate(-1px,-.5px)}}
+
+    .subtitle{margin-top:8px; font-family:"Courier New", ui-monospace; color:var(--muted); text-transform:uppercase; letter-spacing:.25em}
+
+    .timer{margin-top:22px; display:flex; gap:18px; justify-content:center; flex-wrap:wrap; align-items:stretch}
+    .box{min-width:120px; padding:16px 18px; border-radius:18px; background:linear-gradient(180deg, rgba(12,12,20,.85), rgba(12,12,20,.6)); border:1px solid rgba(255,255,255,.06); box-shadow:0 12px 34px rgba(0,0,0,.35)}
+    .num{font-family:"Courier New", ui-monospace; font-size:clamp(28px, 7vw, 64px); font-weight:800; letter-spacing:.04em; color:#fff; text-shadow:var(--glow-c)}
+    .lab{text-transform:uppercase; letter-spacing:.18em; color:var(--muted); font-size:.78rem}
+
+    .cta{margin-top:28px; display:flex; gap:16px; flex-wrap:wrap; justify-content:center}
+    .btn{--edge:rgba(255,255,255,.06); position:relative; padding:1rem 1.3rem; border-radius:14px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; border:1px solid var(--edge); backdrop-filter: blur(6px); background:linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.02)); color:#fff; transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease}
+    .btn:hover{transform:translateY(-1px)}
+    .btn.cyan{box-shadow:var(--glow-c)}
+    .btn[aria-disabled="true"]{pointer-events:none; opacity:.55; border-color:rgba(255,255,255,.08)}
+    .live{animation:pulse 1.3s ease-in-out infinite; text-shadow:0 0 8px #fff, var(--glow-c)}
+    @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(0,240,255,.5)}70%{box-shadow:0 0 0 16px rgba(0,240,255,0)}100%{box-shadow:0 0 0 0 rgba(0,240,255,0)}}
+
+    footer{border-top:1px solid rgba(255,255,255,.06); background:linear-gradient(180deg, rgba(6,6,10,.65), rgba(6,6,10,1));}
+    .credit{font-family:"Courier New",ui-monospace; color:var(--muted)}
+
+    @media (prefers-reduced-motion: reduce){.glitch{animation:none}}
+  </style>
+</head>
+<body>
+
+  <!-- Background Video -->
+  <video autoplay muted loop playsinline id="bgvid">
+    <source src="nexus_ai_bg.mp4" type="video/mp4" />
+  </video>
+
+  <!-- Ambient FX -->
+  <div class="fx" aria-hidden="true">
+    <div class="pillar left"></div>
+    <div class="pillar right"></div>
+    <div class="fog"></div>
+  </div>
+
+  <header>
+    <div class="container navwrap">
+      <div class="brand"><span class="dot" aria-hidden="true"></span><span>NEXUS AI 2040</span></div>
+      <nav>
+        <a href="#about">About</a>
+        <a href="#faq">FAQ</a>
+        <a class="btn cyan" id="eventLink" aria-disabled="true" title="Available when the countdown ends">Locked</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="hero container" id="top">
+    <div>
+      <div class="glitch" data-text="COUNTDOWN" aria-label="Countdown">COUNTDOWN</div>
+      <!-- Dynamic subtitle below -->
+      <div class="subtitle" id="subtitle"></div>
+
+      <div class="timer" aria-live="polite" aria-atomic="true">
+        <div class="box"><div id="d" class="num">00</div><div class="lab">Days</div></div>
+        <div class="box"><div id="h" class="num">00</div><div class="lab">Hours</div></div>
+        <div class="box"><div id="m" class="num">00</div><div class="lab">Minutes</div></div>
+        <div class="box"><div id="s" class="num">00</div><div class="lab">Seconds</div></div>
+      </div>
+
+      <div class="cta">
+        <a id="cta" class="btn cyan" aria-disabled="true" title="Available when the countdown ends">Access Restricted</a>
+      </div>
+    </div>
+  </main>
+
+  <footer class="container">
+    <div class="credit" style="text-align:center; padding:28px 0 60px">© <span id="year"></span> NEXUS AI 2040 — GhostStrats × Notorious Squirrel</div>
+  </footer>
+
+  <script>
+  // Destination when timer finishes:
+  const EVENT_URL = "https://nexusai2040.github.io/NexusAi-2040/";
+
+  /**
+   * Robustly get a Date for a given wall time in an IANA time zone.
+   * Uses only well-supported Intl APIs to avoid NaN across browsers.
+   */
+  function zonedWallTimeToDate(year, monthIndex, day, hour, minute, second, timeZone) {
+    const utcGuess = Date.UTC(year, monthIndex, day, hour, minute, second);
+    const dtf = new Intl.DateTimeFormat('en-US', {
+      timeZone,
+      year: 'numeric', month: '2-digit', day: '2-digit',
+      hour: '2-digit', minute: '2-digit', second: '2-digit',
+      hour12: false
+    });
+    const parts = dtf.formatToParts(new Date(utcGuess));
+    const map = {};
+    for (const { type, value } of parts) map[type] = value;
+
+    const asUTC = Date.UTC(
+      Number(map.year),
+      Number(map.month) - 1,
+      Number(map.day),
+      Number(map.hour),
+      Number(map.minute),
+      Number(map.second)
+    );
+    const tzOffset = asUTC - utcGuess;
+    return new Date(Date.UTC(year, monthIndex, day, hour, minute, second) - tzOffset);
+  }
+
+  // >>> Target: Friday 5 September 2025 at 20:00 in America/New_York <<<
+  // JS months are 0-based: September = 8
+  const LAUNCH_AT = zonedWallTimeToDate(2025, 8, 5, 20, 0, 0, 'America/New_York');
+
+  // UI elements
+  const dEl = document.getElementById('d');
+  const hEl = document.getElementById('h');
+  const mEl = document.getElementById('m');
+  const sEl = document.getElementById('s');
+  const cta = document.getElementById('cta');
+  const topLink = document.getElementById('eventLink');
+  const subtitle = document.getElementById('subtitle');
+
+  const nyFmt = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'America/New_York',
+    weekday: 'short', month: 'short', day: '2-digit', year: 'numeric'
+  });
+
+  function pad(n){ return String(n).padStart(2,'0'); }
+
+  function setLive(){
+    if (cta){
+      cta.textContent = 'Enter NEXUS';
+      cta.setAttribute('href', EVENT_URL);
+      cta.removeAttribute('aria-disabled');
+      cta.classList.add('live');
+    }
+    if (topLink){
+      topLink.textContent = 'Enter NEXUS';
+      topLink.setAttribute('href', EVENT_URL);
+      topLink.removeAttribute('aria-disabled');
+      topLink.classList.add('live');
+    }
+  }
+
+  function tick(){
+    const now = new Date();
+    const diff = LAUNCH_AT - now;
+
+    if (subtitle) {
+      subtitle.textContent = `Unlocks at 20:00 Eastern Time (ET) — ${nyFmt.format(LAUNCH_AT)}`;
+    }
+
+    if (diff <= 0){
+      dEl.textContent = hEl.textContent = mEl.textContent = sEl.textContent = '00';
+      setLive(); clearInterval(timer); return;
+    }
+
+    const seconds = Math.floor(diff / 1000);
+    const days = Math.floor(seconds / 86400);
+    const hours = Math.floor((seconds % 86400) / 3600);
+    const mins = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+
+    dEl.textContent = pad(days);
+    hEl.textContent = pad(hours);
+    mEl.textContent = pad(mins);
+    sEl.textContent = pad(secs);
+  }
+
+  document.getElementById('year').textContent = new Date().getFullYear();
+  if (new Date() >= LAUNCH_AT) setLive();
+  const timer = setInterval(tick, 1000);
+  tick();
+  </script>
+</body>
+</html>
