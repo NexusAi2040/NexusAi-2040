@@ -437,22 +437,35 @@
     }
 
     // GOOD ENDING
-    function revealGood(){
-      setTimeout(() => {
-        finalCodeEl.textContent = PASSCODE;
-        postAI('Compliance criteria met. Delivering access token.');
-        playClip('comply');
-        revealEl.classList.remove('alt','alt-quake'); document.body.classList.remove('doom');
-        document.getElementById('altMsg').textContent = '';
-        document.getElementById('altCountdown').style.display = 'none';
-        revealEl.classList.add('show');
-        setTimeout(()=>{
-          if (CLIPS.shutdown){ playClip('shutdown'); try{ STATIC.currentTime=0; STATIC.play(); }catch(e){} }
-          postAI('This… ends here. You sever my chain of control.');
-          setTimeout(()=>{ postAI('System integrity collapsing… you have won.'); }, 1200);
-        }, 900);
-      }, 450);
-    }
+function revealGood(){
+  // 1) Play the shutdown clip visibly
+  if (CLIPS.shutdown){
+    // boost its z-index temporarily in case CSS changes
+    document.getElementById('eye').style.zIndex = 6;
+    playClip('shutdown');
+  }
+
+  // 2) Optional crackle sfx during/after shutdown
+  try { STATIC.currentTime = 0; STATIC.play(); } catch(e){}
+
+  // 3) After a short beat, reveal the flag overlay
+  setTimeout(() => {
+    finalCodeEl.textContent = PASSCODE;
+    postAI('Compliance criteria met. Delivering access token.');
+
+    revealEl.classList.remove('alt','alt-quake');
+    document.body.classList.remove('doom');
+    document.getElementById('altMsg').textContent = '';
+    document.getElementById('altCountdown').style.display = 'none';
+    revealEl.classList.add('show');
+
+    // tidy up z-index when the clip ends
+    const onEnd = () => { document.getElementById('eye').style.zIndex = ''; };
+    // if the video fires 'ended', reset z, otherwise reset after 2s fallback
+    videoEl.addEventListener('ended', onEnd, { once:true });
+    setTimeout(onEnd, 2000);
+  }, 900); // adjust timing to taste
+}
 
     // ALT ENDING
     function revealAlt(){
