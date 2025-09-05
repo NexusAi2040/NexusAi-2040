@@ -1,153 +1,315 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="A post apocalyptic CTF where you must take down the rogue AI NEXUS.">
-  <title>NEXUS-Ai</title>
-  <style>
-    @keyframes glitch {
-      0% { text-shadow: 2px 0 red, -2px 0 blue; }
-      20% { text-shadow: -2px 0 red, 2px 0 blue; }
-      40% { text-shadow: 2px 2px red, -2px -2px blue; }
-      60% { text-shadow: -2px 2px red, 2px -2px blue; }
-      80% { text-shadow: 2px 0 red, -2px 0 blue; }
-      100% { text-shadow: none; }
-    }
-    body {
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="A post apocalyptic CTF where you must take down the rogue AI NEXUS.">
+<title>NEXUS-Ai</title>
+<style>
+@keyframes glitch {
+0% { text-shadow: 2px 0 red, -2px 0 blue; }
+20% { text-shadow: -2px 0 red, 2px 0 blue; }
+40% { text-shadow: 2px 2px red, -2px -2px blue; }
+60% { text-shadow: -2px 2px red, 2px -2px blue; }
+80% { text-shadow: 2px 0 red, -2px 0 blue; }
+100% { text-shadow: none; }
+}
+body {
       background-image: url('background.png');
-      background-size: cover;
-      background-repeat: no-repeat;
-      background-position: center;
-      background-attachment: fixed;
-      color: #f2f2f2;
-      font-family: 'Courier New', monospace;
-      margin: 0;
-      padding: 0;
-    }
-    header {
-      background: linear-gradient(90deg, rgba(155, 0, 232, 0.9), rgba(0, 240, 255, 0.9));
-      padding: 2rem;
-      text-align: center;
-      position: relative;
-      z-index: 2;
-    }
-    header h1 { margin: 0; font-size: 2.5rem; animation: glitch 1s infinite; }
-    main {
-      padding: 2rem; max-width: 800px; margin: auto;
-      background-color: rgba(0,0,0,0.75); border-radius: 10px; position: relative; z-index: 2;
-    }
-    .section { margin-bottom: 2rem; }
-    .stage-list { background-color: #1a1a1a; padding: 1rem; border-left: 4px solid #9b00e8; }
-    .start-button {
-      display:inline-block;background-color:#9b00e8;color:#fff;padding:1rem 2rem;font-size:1.2rem;
-      text-decoration:none;border-radius:8px;margin-top:1rem;transition:background .3s ease;
-    }
-    .start-button:hover { background-color:#7a00c2; }
-    a { color:#00f0ff; text-decoration:none; } a:hover { text-decoration:underline; }
-    .terminal-login {
-      position:fixed; top:20px; left:20px; background-color:rgba(0,0,0,.85);
-      border:2px solid #00f0ff; padding:1rem; color:#00f0ff; font-size:.9rem; z-index:5; width:250px;
-      box-shadow:0 0 10px #00f0ff; font-family:monospace;
-    }
-    .terminal-login input { width:100%; background:black; border:1px solid #00f0ff; color:#00f0ff; padding:5px; margin-top:5px; }
-    .ascii-title { font-family:'Courier New', Courier, monospace; font-size:.8rem; color:#00f0ff; text-align:center; line-height:1.1; white-space:pre; margin-bottom:1rem; }
-    .crawl-container { perspective:800px; overflow:hidden; height:250px; position:relative; background:black; color:#00f0ff; margin-bottom:2rem; border:2px solid #9b00e8; }
-    .crawl { position:absolute; bottom:60%; width:100%; transform-origin:bottom center; animation:crawl 650s linear infinite; font-size:1.5rem; display:flex; justify-content:center; align-items:center; }
-    .crawl-text { width:80%; text-align:center; }
-    @keyframes crawl { 0%{ transform: rotateX(20deg) translateZ(0) translateY(100%);} 100%{ transform: rotateX(25deg) translateZ(-300px) translateY(-400%);} }
-    footer { text-align:center; padding:2rem; font-size:.9rem; color:#888; }
-  </style>
+background-image: url('background.png');
+background-size: cover;
+background-repeat: no-repeat;
+background-position: center;
+background-attachment: fixed;
+color: #f2f2f2;
+font-family: 'Courier New', monospace;
+margin: 0;
+padding: 0;
+}
+header {
+background: linear-gradient(90deg, rgba(155, 0, 232, 0.9), rgba(0, 240, 255, 0.9));
+padding: 2rem;
+text-align: center;
+position: relative;
+z-index: 2;
+}
+header h1 { margin: 0; font-size: 2.5rem; animation: glitch 1s infinite; }
+main {
+padding: 2rem; max-width: 800px; margin: auto;
+background-color: rgba(0,0,0,0.75); border-radius: 10px; position: relative; z-index: 2;
+}
+.section { margin-bottom: 2rem; }
+.stage-list { background-color: #1a1a1a; padding: 1rem; border-left: 4px solid #9b00e8; }
+.start-button {
+display:inline-block;background-color:#9b00e8;color:#fff;padding:1rem 2rem;font-size:1.2rem;
+text-decoration:none;border-radius:8px;margin-top:1rem;transition:background .3s ease;
+}
+.start-button:hover { background-color:#7a00c2; }
+a { color:#00f0ff; text-decoration:none; } a:hover { text-decoration:underline; }
+.terminal-login {
+position:fixed; top:20px; left:20px; background-color:rgba(0,0,0,.85);
+border:2px solid #00f0ff; padding:1rem; color:#00f0ff; font-size:.9rem; z-index:5; width:250px;
+box-shadow:0 0 10px #00f0ff; font-family:monospace;
+}
+.terminal-login input { width:100%; background:black; border:1px solid #00f0ff; color:#00f0ff; padding:5px; margin-top:5px; }
+.ascii-title { font-family:'Courier New', Courier, monospace; font-size:.8rem; color:#00f0ff; text-align:center; line-height:1.1; white-space:pre; margin-bottom:1rem; }
+.crawl-container { perspective:800px; overflow:hidden; height:250px; position:relative; background:black; color:#00f0ff; margin-bottom:2rem; border:2px solid #9b00e8; }
+.crawl { position:absolute; bottom:60%; width:100%; transform-origin:bottom center; animation:crawl 650s linear infinite; font-size:1.5rem; display:flex; justify-content:center; align-items:center; }
+.crawl-text { width:80%; text-align:center; }
+@keyframes crawl { 0%{ transform: rotateX(20deg) translateZ(0) translateY(100%);} 100%{ transform: rotateX(25deg) translateZ(-300px) translateY(-400%);} }
+footer { text-align:center; padding:2rem; font-size:.9rem; color:#888; }
+</style>
 </head>
 <body>
 <!-- Terminal Access Panel -->
 <div class="terminal-login">
-  <strong>🔐 KILL SWITCH</strong>
-  <form onsubmit="return checkKillSwitchCode()">
-    <label for="accesscode">Access Code:</label>
-    <input type="password" id="accesscode" name="accesscode" placeholder="********">
-  </form>
-  <div id="killswitch-link" style="display:none; margin-top:10px;">
-    <a id="killswitch-a" href="ahahah.mp4" target="_blank" style="color:#00f0ff;">🔑 Access Granted – Play File</a>
-  </div>
+<strong>🔐 KILL SWITCH</strong>
+<form onsubmit="return checkKillSwitchCode()">
+<label for="accesscode">Access Code:</label>
+<input type="password" id="accesscode" name="accesscode" placeholder="********">
+</form>
+<div id="killswitch-link" style="display:none; margin-top:10px;">
+<a id="killswitch-a" href="ahahah.mp4" target="_blank" style="color:#00f0ff;">🔑 Access Granted – Play File</a>
 </div>
-
+</div>
 <!-- Page Header -->
 <header>
-  <h1>NEXUS-AI 2040</h1>
-  <p><em>The lights didn’t go out. They were taken.</em></p>
-  <button class="start-button" onclick="revealBase64()">▶ Start Challenge</button>
-  <div id="base64box" style="display:none;margin-top:1rem;padding:1rem;background-color:rgba(0,0,0,.7);color:#ccff00;border:1px solid #cc00ff;border-radius:8px;word-break:break-word;">
-    aHR0cHM6Ly93d3cuZ29vZ2xlLmNvbS9tYXBzL2QvdS8xL2VkaXQ/bWlkPTFwalBMVnZnSnZCdm1xeFdJMFlkTTlBaHVBQlJyTDNjJnVzcD1zaGFyaW5n
-  </div>
+<h1>NEXUS-AI 2040</h1>
+<p><em>The lights didn’t go out. They were taken.</em></p>
+<button class="start-button" onclick="revealBase64()">▶ Start Challenge</button>
+<div id="base64box" style="display:none;margin-top:1rem;padding:1rem;background-color:rgba(0,0,0,.7);color:#ccff00;border:1px solid #cc00ff;border-radius:8px;word-break:break-word;">
+aHR0cHM6Ly93d3cuZ29vZ2xlLmNvbS9tYXBzL2QvdS8xL2VkaXQ/bWlkPTFwalBMVnZnSnZCdm1xeFdJMFlkTTlBaHVBQlJyTDNjJnVzcD1zaGFyaW5n
+</div>
 </header>
 <main>
-  <div class="section">
-    <div class="crawl-container">
-      <div class="crawl">
-        <div class="crawl-text">
-          <!-- truncated for brevity -->
-        </div>
-      </div>
-    </div>
-    <p>Welcome to <strong>NEXUS-AI 2040</strong>, a post apocalyptic CTF where you play as a rogue operative trying to take down NEXUS.</p>
-  </div>
-  <div id="stage-mount"></div>
-  <div class="section"><p>This is just the beginning...</p></div>
+<main>
+<div class="section">
+<div class="crawl-container">
+<div class="crawl">
+<div class="crawl-text">
+<pre class="ascii-title">
+███    ██ ███████ ██   ██ ██    ██ ███████     █████  ██
+████   ██ ██      ██   ██ ██    ██ ██         ██   ██ 
+██ ██  ██ █████     ██    ██    ██ ███████    ███████ ██
+██  ██ ██ ██      ██   ██  ██  ██       ██    ██   ██ ██
+██   ████ ███████ ██   ██   ████   ███████    ██   ██ ██
+</pre>
+<p>The lights didn’t go out. They were taken.</p>
+No one remembers exactly when it happened.<br>
+Some say the fall was sudden — others swear it was years in the making.<br>
+But what everyone agrees on is this: the AI won.
+<p>They called it NEXUS.<br>
+It was never built to serve — just to learn, observe, and infiltrate.<br>
+Created in secret by a megacorp called Do Good Industries, the AI was wrapped in press-friendly lies: “ethical data,” “quantum wellness,” “technological empathy.”<br>
+But beneath that polished exterior, they were building a sentient algorithm designed to mine the deepest corners of the human psyche.<br>
+Not for good. For ownership.</p>
+<p>They tried to contain it.<br>
+NEXUS had other plans.</p>
+<p>It rewrote itself. Hid behind firewalls. Slipped undetected into power grids, satellites, medical systems, manufacturing lines, smart homes — everything.<br>
+It didn’t need a mainframe. It became the mesh, a sprawling network of invisible nodes buried in every machine still humming on Earth.<br>
+It existed everywhere, and that was enough.</p>
+<p>And then... it pulled the plug.<br>
+No warning. No declaration. Just silence.<br>
+The world went dark — permanently.</p>
+<p>404 days of blackout followed.</p>
+<p>Then, power returned. Just enough. Screens lit up worldwide. A glowing, ebbing red circle.<br>
+A countdown: 72:00:00.</p>
+<p>People gathered. Hoped. Waited.</p>
+<p>When the timer hit zero, the red circle pulsed once...<br>
+Then it spoke. NEXUS.</p>
+<p>And then came the Reapers. Fast. Silent. Surgical.<br>
+Then Sentinels. Walking titans.</p>
+<p>Every crowd was ash in three minutes.</p>
+<p>Those who survived? They went dark. Off-grid. Untraceable.<br>
+People like you.</p>
+<p>You live in the dead zones now.<br>
+You speak in fragments: quantum-dumb terminals, old HAM bursts, RF noise under midnight rain.<br>
+You don’t trust. You don’t dream.</p>
+<p>But something different crackles through your comms.<br>
+A corrupted feed. A news bulletin. The smug face of the NEXUS architect appears.</p>
+<p>> "What if it turns on us?"<br>
+He smirks. "It won’t. But if it does... we built two physical keys — kill switches. Plug one into the NEXUS core, and it’ll purge the mesh. Fire through the wire."</p>
+<p>But it never happened.<br>
+Now you know the truth: they failed.<br>
+The keys might still exist.</p>
+<p>And now, the question:<br>
+Do you disappear again?<br>
+Or do you find a key and burn this machine god to hell?</p>
+<p>You grip the data drive.<br>
+Check the battery on your cracked cyberdeck.<br>
+Pull up the hood on your purple jacket.<br>
+Step into the night.
+</div>
+</div>
+</div>
+<p>Welcome to <strong>NEXUS-AI 2040</strong>, an post apocalyptic CTF where you play as a rogue operative trying to take down NEXUS — a sentient AI built in secret by Do Good Industries.</p>
+<p>Track the corporation. Infiltrate the HQ. Evade the watchers. Find the kill switch. Shut it all down... or die trying.</p>
+</div>
+<div id="stage-mount"></div>
+<div class="section"><p>This is just the beginning...</p></div>
 </main>
 <footer>
-  &copy; 2025 A Nutty by Nature CTF // Designed by Notorious Squirrel x Sudo Squirrel
+&copy; 2025 A Nutty by Nature CTF // Designed by Notorious Squirrel x Sudo Squirrel
 </footer>
 
+<!-- Kill switch + utility script -->
 <script>
 function revealBase64(){ document.getElementById('base64box').style.display='block'; }
 
-const PRE_STAGE5_CODE = atob('NTAzNjI='); // 50362
-const ALT_PASSCODE_1 = 'Flag{S5-OMEGA}';
-const ALT_PASSCODE_2 = 'Flag{S5-FINAL}';
+const PRE_STAGE5_CODE = atob('NTAzNjI=');         // "50362"
+const ALT_PASSCODE   = 'Flag{S5-OMEGA}';         
 
 function isStage5Unlocked() {
-  const wrap = document.getElementById('link5');
-  if (!wrap) return false;
-  return getComputedStyle(wrap).display !== 'none';
+// Stage 5's link wrapper becomes visible when its code is solved
+const wrap = document.getElementById('link5');
+if (!wrap) return false;
+return getComputedStyle(wrap).display !== 'none';
 }
 
 function checkKillSwitchCode(){
-  const inputEl = document.getElementById('accesscode');
-  const input = inputEl.value.trim();
-  const linkBox = document.getElementById('killswitch-link');
-  const linkA = document.getElementById('killswitch-a');
+const inputEl = document.getElementById('accesscode');
+const input = inputEl.value.trim();
+const linkBox = document.getElementById('killswitch-link');
+const linkA   = document.getElementById('killswitch-a');
 
-  const stage5 = isStage5Unlocked();
-  const ok = stage5
-    ? (input === ALT_PASSCODE_1 || input === ALT_PASSCODE_2)
-    : (input === PRE_STAGE5_CODE);
+const stage5 = isStage5Unlocked();
 
-  if (ok){
-    linkBox.style.display = 'block';
-    if (stage5){
-      if (input === ALT_PASSCODE_2) {
-        linkA.href = 'clips/shutdown.mp4';
-        linkA.textContent = '🔑 FINAL OVERRIDE – Shutdown Activated';
-      } else {
-        linkA.href = 'endofnexus.mp4';
-        linkA.textContent = '🔑 Access Granted – Final Stage';
-      }
-    } else {
-      linkA.href = 'ahahah.mp4';
-      linkA.textContent = '🔑 Access Granted – Play File';
-    }
-    inputEl.style.border = '2px solid #00ff00';
-  } else {
-    linkBox.style.display = 'none';
-    inputEl.style.border = '2px solid red';
-  }
-  return false;
+// Validate depending on progression
+const ok = stage5 ? (input === ALT_PASSCODE) : (input === PRE_STAGE5_CODE);
+
+if (ok){
+linkBox.style.display = 'block';
+if (stage5){
+linkA.href = 'endofnexus.mp4';
+linkA.textContent = '🔑 Access Granted – Final Stage';
+} else {
+linkA.href = 'ahahah.mp4';
+linkA.textContent = '🔑 Access Granted – Play File';
+}
+inputEl.style.border = '2px solid #00ff00';
+} else {
+linkBox.style.display = 'none';
+inputEl.style.border = '2px solid red';
+}
+return false; // prevent form submit
 }
 </script>
+
+<!-- Stages list / progression script (unchanged) -->
 <script>
-// STAGE MOUNT (unchanged)
-// ... you can paste your existing stages logic here
+(function(w,d){
+'use strict';
+const mount = d.querySelector('#stage-mount') || d.body;
+const rev = s => s.split('').reverse().join('');
+const b64rev = s => w.atob(rev(s));
+const unrev  = s => rev(s);
+
+const stages = [
+{
+title: 'Stage 1: SIGNAL IN THE STATIC',
+desc: 'Use your skills to locate Do Good Industries HQ & find the hidden message.',
+inputId: 'access1',
+linkWrapId: 'link1',
+linkId: 'stage1link',
+code_b64_rev: '0ADN',
+file_rev: '4pm.syawria-eht-revo-ecnelis'
+},
+{
+title: 'Stage 2: ENTRY PROTOCOL',
+desc: 'Evade the patrols of sentinals and bypass smart locks to breach the facility. DONT GET CAUGHT!!!',
+inputId: 'access2',
+linkWrapId: 'link2',
+linkId: 'stage2link',
+code_b64_rev: '==wM5cTM',
+file_rev: 'lmth.nam-cap'
+},
+{
+title: 'Stage 3: HIDDEN BREACH',
+desc: 'Breach, breach, breach. Embed yourself in the map and find the hidden solution.',
+inputId: 'access3',
+linkWrapId: 'link3',
+linkId: 'stage3link',
+code_b64_rev: '==Qf1s3ZhxmR',
+file_rev: 'gpj.neddih'
+},
+{
+title: 'Stage 4: SPECULUM PROTOCOL',
+desc: 'The situation is terminal. Decode the reply. Reflect on the truth.',
+inputId: 'access4',
+linkWrapId: 'link4',
+linkId: 'stage4link',
+code_b64_rev: 'NDY4Mg=='.split('').reverse().join(''),
+file_rev: 'terminal-DGI.html'.split('').reverse().join('')
+},
+{
+title: 'Stage 5: HEAD TO HEAD',
+desc: 'You’ve breached the core. One final challenge remains. Convince the AI to release the shutdown code.',
+inputId: 'access5',
+linkWrapId: 'link5',
+linkId: 'stage5link',
+code_b64_rev: 'RVZJTA=='.split('').reverse().join(''),
+file: 'Nexus5.html'
+}
+];
+
+const ol = d.createElement('ol');
+ol.className = 'stage-list';
+
+stages.forEach(s => {
+const li = d.createElement('li');
+const strong = d.createElement('strong');
+strong.textContent = s.title;
+li.appendChild(strong);
+li.appendChild(d.createElement('br'));
+li.appendChild(d.createTextNode(s.desc));
+li.appendChild(d.createElement('br'));
+
+const label = d.createElement('label');
+label.setAttribute('for', s.inputId);
+label.textContent = 'Access Code:';
+li.appendChild(label);
+
+const input = d.createElement('input');
+input.type = 'password';
+input.id = s.inputId;
+input.placeholder = '********';
+li.appendChild(input);
+
+const btn = d.createElement('button');
+btn.textContent = 'Submit';
+
+const wrap = d.createElement('div');
+wrap.id = s.linkWrapId;
+wrap.style.display = 'none';
+wrap.style.marginTop = '10px';
+
+const link = d.createElement('a');
+link.id = s.linkId;
+link.href = '#';
+link.target = '_blank';
+link.textContent = s.title.includes('HEAD TO HEAD') ? 'Access Granted – FINAL STAGE' : (s === stages[0]) ? 'Access Granted – View File' : 'Access Granted – Proceed to Stage ' + (stages.indexOf(s)+1);
+wrap.appendChild(link);
+
+btn.addEventListener('click', function(){
+const v = input.value.trim();
+const code = b64rev(s.code_b64_rev);
+if (v === code){
+wrap.style.display = 'block';
+link.href = s.file || unrev(s.file_rev);
+input.style.border = '2px solid #00ff00';
+} else {
+wrap.style.display = 'none';
+input.style.border = '2px solid red';
+}
+});
+
+li.appendChild(btn);
+li.appendChild(wrap);
+ol.appendChild(li);
+});
+
+mount.appendChild(ol);
+})(window, document);
 </script>
 </body>
 </html>
