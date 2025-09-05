@@ -601,6 +601,13 @@
           "reply": ["Reflection accepted. LIVE ⇄ EVIL."]
         },
         {
+          "re": "open sesame",
+          "flags": "i",
+          "delta": 30,
+          "clip": "curious",
+          "reply": ["Reflection accepted. LIVE ⇄ EVIL."]
+        },
+        {
           "re": "What does LIVE become when mirrored\\?",
           "flags": "i",
           "delta": 30,
