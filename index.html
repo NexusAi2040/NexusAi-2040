@@ -148,19 +148,15 @@ Step into the night.
   <div class="section"><p>This is just the beginning...</p></div>
 </main>
 <footer>
-  &copy; 2025 A "CANT FIND MY NUTS" CTF // Designed by Notorious Squirrel
+  &copy; 2025 A Nutty by Nature CTF // Designed by Notorious Squirrel x Sudo Squirrel
 </footer>
 
 <!-- Kill switch + utility script -->
 <script>
   function revealBase64(){ document.getElementById('base64box').style.display='block'; }
 
-  // ========= KILL SWITCH BEHAVIOR (adjusted) =========
-  // Pre–Stage 5: numeric code (base64 'NTAzNjI=' => '50362') -> ahahah.mp4
-  // Post–Stage 5 unlock: ALT finish code 'Flag{S5-OMEGA}' -> Nexus5.html
-
   const PRE_STAGE5_CODE = atob('NTAzNjI=');         // "50362"
-  const ALT_PASSCODE   = 'Flag{S5-OMEGA}';         // post-Stage-5 requirement
+  const ALT_PASSCODE   = 'Flag{S5-OMEGA}';         
 
   function isStage5Unlocked() {
     // Stage 5's link wrapper becomes visible when its code is solved
@@ -183,7 +179,7 @@ Step into the night.
     if (ok){
       linkBox.style.display = 'block';
       if (stage5){
-        linkA.href = 'Nexus5.html';
+        linkA.href = 'endofnexus';
         linkA.textContent = '🔑 Access Granted – Final Stage';
       } else {
         linkA.href = 'ahahah.mp4';
