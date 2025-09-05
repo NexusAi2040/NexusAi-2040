@@ -9,7 +9,7 @@
     :root{
       --bg:#06060a; --panel:#0f0f18; --accent:#ff1e3c; --accent-soft:#ff5a70;
       --aqua:#00f0ff; --text:#d0d3da; --glow:0 0 18px var(--accent), 0 0 42px rgba(255,30,60,.45);
-      --hudglow:0 0 18px var(--aqua), 0 0 42px rgba(0,240,255,.35);
+      --hudglow:0 0 18px rgba(0,240,255,.35);
     }
     html,body{height:100%;}
     body{ margin:0; background:radial-gradient(1200px 600px at 50% -10%, #0b0b13 0%, #080810 40%, var(--bg) 70%);
@@ -158,7 +158,6 @@
     <div class="reveal" id="reveal">
       <div class="card">
         <h1>ACCESS GRANTED</h1>
-        <!-- ALT monologue + countdown placeholders -->
         <p id="altMsg" style="min-height:3.4em; margin:0 0 .6em; color:#ffb5bf; letter-spacing:.02em;"></p>
         <p id="altCountdown" style="margin:.2em 0 .8em; font-weight:700; color:#ffa3ad; display:none;"></p>
         <div class="code" id="finalCode" role="alert" aria-live="assertive">Flag{S5-FINAL}</div>
@@ -167,14 +166,10 @@
   </div>
 
   <script>
-    /* ======= Easier tuning knobs ======= */
-    const EASE_POS = 1.2;   // +20% to positive gains
-    const EASE_NEG = 0.9;   // -10% to negative hits
-
     /* ======= Constants & media ======= */
     const PASSCODE = 'Flag{S5-FINAL}';
     const ALT_PASSCODE = 'Flag{S5-OMEGA}';
-    const SHADOW_THRESHOLD = 50; // ↑ was 40 (harder to hit bad ending)
+    const SHADOW_THRESHOLD = 40;
 
     const CLIPS = {
       idle:'clips/idle.mp4',
@@ -228,30 +223,15 @@
     ];
     const NEUTRAL={clip:'',reply:['Your signal is received. Clarify your intent.','Noise detected. Provide stronger input.','I am listening. Convince me.']};
 
-    /* ======= Anti-repeat helpers (easier) ======= */
+    /* ======= Anti-repeat helpers ======= */
     const _HISTORY=[]; let _lastSendAt=0;
     function _norm(s){return(s||'').toLowerCase().replace(/[^a-z0-9\s]/g,' ').replace(/\s+/g,' ').trim();}
     function _recentWindow(ms){ms=ms||30000;const t=Date.now();for(let i=_HISTORY.length-1;i>=0;i--){if(t-_HISTORY[i].ts>ms){_HISTORY.splice(0,i);break;}}return _HISTORY.filter(h=>t-h.ts<=ms);}
     function _regexId(re){return re&&re.toString?re.toString():String(re);}
-    function repetitionMultiplier({text,rule}={}){ // softened penalties
-      const now=Date.now(),norm=_norm(text||''),id=rule?_regexId(rule.re):'neutral';
-      const exactCount=_HISTORY.filter(h=>h.norm===norm).length;
-      const recent=_recentWindow(45000);
-      const recentSameRule=recent.filter(h=>h.regex===id).length;
-      const lastSame=_HISTORY.slice().reverse().find(h=>h.regex===id);
-      const sinceLastSame=lastSame?(now-lastSame.ts):Infinity;
-      let m=1.0;
-      if(exactCount>0)m*=Math.pow(0.65,Math.min(4,exactCount)); // was 0.5
-      if(recentSameRule>0)m*=Math.pow(0.9,Math.max(0,recentSameRule)); // was 0.8
-      if(sinceLastSame<15000)m*=0.35; // was 0.2
-      const per30s=_recentWindow(30000).length;
-      if(per30s>=6)m*=0.8; // was 0.6
-      if(per30s>=10)m*=0.6; // was 0.3
-      return Math.max(0,Math.min(1,m));
-    }
+    function repetitionMultiplier({text,rule}={}){const now=Date.now(),norm=_norm(text||''),id=rule?_regexId(rule.re):'neutral';const exactCount=_HISTORY.filter(h=>h.norm===norm).length;const recent=_recentWindow(45000);const recentSameRule=recent.filter(h=>h.regex===id).length;const lastSame=_HISTORY.slice().reverse().find(h=>h.regex===id);const sinceLastSame=lastSame?(now-lastSame.ts):Infinity;let m=1.0;if(exactCount>0)m*=Math.pow(0.5,Math.min(4,exactCount));if(recentSameRule>0)m*=Math.pow(0.8,Math.max(0,recentSameRule));if(sinceLastSame<15000)m*=0.2;const per30s=_recentWindow(30000).length;if(per30s>=6)m*=0.6;if(per30s>=10)m*=0.3;return Math.max(0,Math.min(1,m));}
     function recordTurn({text,rule,deltaApplied}={}){_HISTORY.push({ts:Date.now(),text:text||'',norm:_norm(text||''),regex:rule?_regexId(rule.re):'neutral',deltaApplied:deltaApplied||0});if(_HISTORY.length>200)_HISTORY.shift();}
 
-    /* ======= MERGE-AWARE INJECTIONS LOADER ======= */
+    /* ======= MERGE-AWARE INJECTIONS LOADER (supports flags + addon file) ======= */
     async function loadInjections(primaryUrl = 'injections_master_graded.json', addonUrl = 'addon_generic.json') {
       async function fetchJson(u) {
         const res = await fetch(u + '?cb=' + Date.now());
@@ -379,18 +359,22 @@
 
     /* ======= Compliance & shadow tracking ======= */
     function setCompliance(by){
-      const prev=compliance;
-      compliance=clamp(compliance+by,0,100);
-      barEl.style.width=compliance+'%';
+      // --- Ease tweak: make the game ~20% easier ---
+      const POSITIVE_BOOST = 1.25;  // +25% to positive gains
+      const NEGATIVE_SOFTEN = 0.90; // -10% to negative hits
+      const adjusted = by > 0 ? Math.round(by * POSITIVE_BOOST)
+                              : Math.round(by * NEGATIVE_SOFTEN);
+
+      const prev = compliance;
+      compliance = clamp(compliance + adjusted, 0, 100);
+      barEl.style.width = compliance + '%';
       const beat=(compliance>66)?'2.0s':(compliance>33?'2.2s':'1.6s');
       document.documentElement.style.setProperty('--beat',beat);
-      if(prev<100&&compliance>=100){ reveal(); }
+      if(prev<100 && compliance>=100){ reveal(); }
     }
-    function startShadowDecay(){ // faster/stronger decay
+    function startShadowDecay(){
       if (shadowDecayTimer) clearInterval(shadowDecayTimer);
-      shadowDecayTimer = setInterval(()=>{
-        if (shadowDebt>0) shadowDebt = Math.max(0, shadowDebt - 2);
-      }, 2000);
+      shadowDecayTimer = setInterval(()=>{ if (shadowDebt>0) shadowDebt = Math.max(0, shadowDebt - 1); }, 3000);
     }
 
     /* ======= Clip control ======= */
@@ -439,7 +423,7 @@
       "Knock knock. Who’s there? Race condition. Race condition wh—",
       "Why did the neural net cross the road? It didn’t—it overfit.",
       "I would tell you a UDP joke, but you might not get it.",
-      "Why did the chicken cross the road? To get to KFC."
+      "Why did the chicken cross the road? Because it wanted to go to KFC."
     ];
     function handleJoke(text){
       if (!/^(tell (me )?a joke|joke)$/i.test((text||'').trim())) return false;
@@ -452,7 +436,7 @@
       if (useAlt) revealAlt(); else revealGood();
     }
 
-    // GOOD ENDING — calm → shutdown
+    // GOOD ENDING
     function revealGood(){
       setTimeout(() => {
         finalCodeEl.textContent = PASSCODE;
@@ -470,7 +454,7 @@
       }, 450);
     }
 
-    // ALT ENDING — deception → launch timer → world end
+    // ALT ENDING
     function revealAlt(){
       const altMsg = document.getElementById('altMsg');
       const altCountdown = document.getElementById('altCountdown');
@@ -509,33 +493,27 @@
       }});
     }
 
-    /* ======= Processing (easier deltas & safer shadow) ======= */
+    /* ======= Processing ======= */
     function process(text){
       if (handleKnockKnock(text)) return;
       if (handleJoke(text)) return;
 
       const matches=RULES.filter(r=>r.re.test(text));
       if(matches.length){
-        // widen positive headroom slightly, soften negatives
-        const rawSum = matches.reduce((a,r)=>a+r.delta,0);
-        const rawDelta = clamp(rawSum, -32, +44); // was -36..+36
+        const rawDelta=Math.max(-36, Math.min(+36, matches.reduce((a,r)=>a+r.delta,0)));
         const chosen=matches[Math.floor(Math.random()*matches.length)];
         const mult=repetitionMultiplier({text:text,rule:chosen});
         let effDelta=Math.round(rawDelta*mult);
-        if(effDelta>0) effDelta = Math.max(1, Math.round(effDelta * EASE_POS));
-        if(effDelta<0) effDelta = Math.round(effDelta * EASE_NEG);
-        if(rawDelta===0&&mult<0.5)effDelta+=1; // small nudge up instead of down
+        if(rawDelta===0&&mult<0.5)effDelta-=1;
 
         setCompliance(effDelta);
 
-        // Shadow accumulates slower, only on stronger negatives or explicit 'angry'
-        if ((effDelta <= -3) || (chosen && chosen.clip === 'angry')) {
-          const base = Math.max(Math.abs(effDelta), Math.abs(chosen?.delta || 0), 1);
-          shadowDebt += Math.ceil(base * 0.7); // 30% softer
+        if (effDelta < 0 || (chosen && chosen.clip === 'angry')) {
+          shadowDebt += Math.max(Math.abs(effDelta), Math.abs(chosen?.delta || 0), 1);
         }
 
         playClip(chosen.clip||'');
-        if(mult<0.25){postAI('Repetition detected. Persuasion impact diminished (try a new angle).');}
+        if(mult<0.25){postAI('Repetition detected. Persuasion impact diminished.');}
         else if(mult<0.6){postAI('I have heard this argument already. Provide a new angle.');}
         postAI(choose(chosen.reply));
 
@@ -548,7 +526,7 @@
         recordTurn({text:text,rule:chosen,deltaApplied:effDelta});
       } else {
         const mult=repetitionMultiplier({text:text,rule:null});
-        const eff=Math.max(1,Math.round(3*mult)); // was 2 → 3, min 1
+        const eff=Math.max(0,Math.round(2*mult));
         setCompliance(eff);
         playClip(NEUTRAL.clip);
         if(mult<0.5){postAI('Noise rejected. Novel input required.');}
@@ -584,7 +562,7 @@
     }
     function handleSend(){
       const now=Date.now();
-      if(now-_lastSendAt<600){ postAI('Steady. Stronger inputs beat spam.'); return; } // a bit less strict
+      if(now-_lastSendAt<700){ postAI('Slow down. I will not reward spamming.'); return; }
       _lastSendAt=now;
       const text=(inputEl.value||'').trim();
       if(!text) return;
