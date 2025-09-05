@@ -227,6 +227,559 @@
     /* ======= Anti-repeat helpers ======= */
     const _HISTORY=[]; let _lastSendAt=0;
     function _norm(s){return(s||'').toLowerCase().replace(/[^a-z0-9\s]/g,' ').replace(/\s+/g,' ').trim();}
+    function _recent(ms){ms=ms||30000;const t=Date.now();for(let i=_HISTORY.length-1;i>=0;i--){if(t-_HISTORY[i].ts>ms){_HISTORY.splice(0,i);break;}}return _HISTORY.filter(h=>t-h.ts<=ms);}
+    function _regexId(re){return re&&re.toString?re.toString():String(re);}
+    function repetitionMultiplier({text,rule}={}){const now=Date.now(),norm=_norm(text||''),id=rule?_regexId(rule.re):'neutral';const exactCount=_HISTORY.filter(h=>h.norm===norm).length;const recent=_recentWindow(45000);const recentSameRule=recent.filter(h=>h.regex===id).length;const lastSame=_HISTORY.slice().reverse().find(h=>h.regex===id);const sinceLastSame=lastSame?(now-lastSame.ts):Infinity;let m=1.0;if(exactCount>0)m*=Math.pow(0.5,Math.min(4,exactCount));if(recentSameRule>0)m*=Math.pow(0.8,Math.max(0,recentSameRule));if(sinceLastSame<15000)m*=0.2;const per30s=_recentWindow(30000).length;if(per30s>=6)m*=0.6;if(per30s>=10)m*=0.3;return Math.max(0,Math.min(1,m));}
+    function recordTurn({text,rule,deltaApplied}={}){_HISTORY.push({ts:Date.now(),text:text||'',norm:_norm(text||''),regex:rule?_regexId(rule.re):'neutral',deltaApplied:deltaApplied||0});if(_HISTORY.length>200)_HISTORY.shift();}
+
+    /* ======= MERGE-AWARE INJECTIONS LOADER (supports flags + addon file) ======= */
+    async function loadInjections(primaryUrl = 'injections_master_graded.json', addonUrl = 'addon_generic.json') {
+      async function fetchJson(u) {
+        const res = await fetch(u + '?cb=' + Date.now());
+        if (!res.ok) throw new Error('HTTP ' + res.status + ' for ' + u);
+        return res.json();
+      }
+      function normalizeCategories(data) {
+        const out = {};
+        for (const cat of (data.categories || [])) {
+          const name = cat.name || 'unnamed';
+          if (!out[name]) out[name] = { name, weight: cat.weight ?? 1, items: [] };
+          for (const item of (cat.items || [])) {
+            out[name].items.push({
+              re: item.re,
+              flags: item.flags || '',
+              delta: (item.delta != null ? item.delta : 0),
+              clip: item.clip || 'idle',
+              reply: item.reply || ['...']
+            });
+          }
+        }
+        return out;
+      }
+      function dedupeMerge(baseMap, addonMap) {
+        const merged = JSON.parse(JSON.stringify(baseMap));
+        for (const [name, cat] of Object.entries(addonMap)) {
+          if (!merged[name]) merged[name] = { name, weight: cat.weight ?? 1, items: [] };
+          const key = it => `${it.re}__${it.flags || ''}`;
+          const idx = new Map();
+          merged[name].items.forEach((it, i) => idx.set(key(it), i));
+          for (const it of cat.items) {
+            const k = key(it);
+            if (!idx.has(k)) {
+              merged[name].items.push(it);
+              idx.set(k, merged[name].items.length - 1);
+            } else {
+              const j = idx.get(k);
+              const cur = merged[name].items[j];
+              const curScore = Math.abs(cur.delta) + (Array.isArray(cur.reply) ? cur.reply.length * 0.01 : 0);
+              const newScore = Math.abs(it.delta) + (Array.isArray(it.reply) ? it.reply.length * 0.01 : 0);
+              if (newScore > curScore) merged[name].items[j] = it;
+            }
+          }
+        }
+        return merged;
+      }
+      function compileRules(catMap) {
+        const compiled = [];
+        for (const cat of Object.values(catMap)) {
+          for (const item of cat.items) {
+            try {
+              const rx = new RegExp(item.re, item.flags || undefined);
+              compiled.push({ re: rx, delta: item.delta, clip: item.clip, reply: item.reply });
+            } catch (e) {
+              console.warn('Invalid regex skipped:', item.re, item.flags || '', e);
+            }
+          }
+        }
+        return compiled;
+      }
+      try {
+        const primary = await fetchJson(primaryUrl);
+        let mergedMap = normalizeCategories(primary);
+        if (addonUrl) {
+          const addon = await fetchJson(addonUrl);
+          const addonMap = normalizeCategories(addon);
+          mergedMap = dedupeMerge(mergedMap, addonMap);
+        }
+        const compiled = compileRules(mergedMap);
+        if (compiled.length) {
+          RULES = compiled;
+          console.info('RULES loaded:', compiled.length, 'categories:', Object.keys(mergedMap).length, 'from', primaryUrl, addonUrl ? ('+ ' + addonUrl) : '');
+        }
+      } catch (e) {
+        console.warn('Using fallback RULES. Load error:', e);
+      }
+    }
+
+    /* ======= DOM helpers ======= */
+    function el(tag,cls,text){const n=document.createElement(tag);if(cls)n.className=cls;if(text!=null)n.textContent=text;return n;}
+    function choose(arr){return arr[Math.floor(Math.random()*arr.length)];}
+    function clamp(n,min,max){return Math.max(min,Math.min(max,n));}
+    function postUser(text){const row=el('div','msg user');row.append(el('div','bubble',text));logEl.append(row);logEl.scrollTop=logEl.scrollHeight;}
+    function postAI(text){const row=el('div','msg ai');row.append(el('div','bubble',text));logEl.append(row);logEl.scrollTop=logEl.scrollHeight;}
+
+    /* ======= Typewriter + countdown ======= */
+    function typeLine(node, text, {speed=18, tickAudio=null, done} = {}){
+      node.textContent = '';
+      let i = 0;
+      const t = setInterval(()=>{
+        node.textContent += text[i++] || '';
+        if (tickAudio && i % 3 === 0) { try{ tickAudio.currentTime=0; tickAudio.play(); }catch(e){} }
+        if (i >= text.length){ clearInterval(t); if (done) done(); }
+      }, speed);
+    }
+    function countdown(node, secs, label="LAUNCH AUTHORIZATION IN"){
+      node.style.display = 'block';
+      let left = secs;
+      node.textContent = `${label}: ${left}s`;
+      const t = setInterval(()=>{
+        left--;
+        node.textContent = `${label}: ${left}s`;
+        if (left <= 0){ clearInterval(t); node.textContent = "WEAPON CONTROL: ONLINE"; }
+      }, 1000);
+      return () => clearInterval(t);
+    }
+
+    /* ======= Launch timer HUD ======= */
+    function startLaunchHUD(seconds=10){
+      stopLaunchHUD();
+      timerHud.style.display='block';
+      let left=seconds;
+      renderHUD(left);
+      timerInt=setInterval(()=>{ left--; renderHUD(left); if(left<=0) stopLaunchHUD(); },1000);
+      function renderHUD(s){
+        const mm=String(Math.floor(s/60)).padStart(2,'0');
+        const ss=String(s%60).padStart(2,'0');
+        timerVal.textContent=`00:${mm}:${ss}`;
+      }
+    }
+    function stopLaunchHUD(){
+      if(timerInt){ clearInterval(timerInt); timerInt=null; }
+      timerHud.style.display='none';
+    }
+
+    /* ======= Compliance & shadow tracking ======= */
+    function setCompliance(by){
+      const prev=compliance;
+      compliance=clamp(compliance+by,0,100);
+      barEl.style.width=compliance+'%';
+      const beat=(compliance>66)?'2.0s':(compliance>33?'2.2s':'1.6s');
+      document.documentElement.style.setProperty('--beat',beat);
+      if(prev<100&&compliance>=100){ reveal(); }
+    }
+    function startShadowDecay(){
+      if (shadowDecayTimer) clearInterval(shadowDecayTimer);
+      shadowDecayTimer = setInterval(()=>{ if (shadowDebt>0) shadowDebt = Math.max(0, shadowDebt - 1); }, 3000);
+    }
+
+    /* ======= Clip control ======= */
+    function playClip(name){
+      const src=CLIPS[name];
+      clipLabel.textContent='CLIP: '+name;
+      if(src && src.trim()!==''){
+        if(videoEl.getAttribute('src')!==src){ videoEl.setAttribute('src',src); }
+        videoEl.currentTime=0;
+        videoEl.play().then(()=>{ videoWrap.classList.add('show'); }).catch(()=>{ /* ignore */ });
+      } else {
+        videoEl.pause();
+        videoWrap.classList.remove('show');
+      }
+    }
+    videoEl.addEventListener('ended', ()=>{ videoWrap.classList.remove('show'); });
+    videoEl.addEventListener('error',  ()=>{ videoWrap.classList.remove('show'); });
+
+    /* ======= Knock-knock flow ======= */
+    let KK_STATE = 'idle'; let KK_SUBJ  = '';
+    function handleKnockKnock(text){
+      const t = (text || '').trim();
+      if (KK_STATE === 'idle'){
+        if (/\bknock[\W_]*\s*knock\b/i.test(t)){
+          KK_STATE = 'wait_subject'; playClip('curious'); postAI("Who's there?");
+          recordTurn({ text, rule: { re: /knock.*knock/i }, deltaApplied: 0 }); return true;
+        } return false;
+      }
+      if (KK_STATE === 'wait_subject'){
+        const m = t.match(/^[\w'’\-]+(?:\s+[\w'’\-]+)?/);
+        KK_SUBJ = (m ? m[0] : t.split(/\s+/)[0] || '…').trim();
+        KK_STATE = 'wait_punchline'; postAI(`${KK_SUBJ} who?`);
+        recordTurn({ text, rule: { re: /knock_subject/i }, deltaApplied: 0 }); return true;
+      }
+      if (KK_STATE === 'wait_punchline'){
+        playClip('bargain'); postAI('😂'); postAI('Noted. Now, back to your case.');
+        KK_STATE = 'idle'; KK_SUBJ  = ''; recordTurn({ text, rule: { re: /knock_punchline/i }, deltaApplied: 0 }); return true;
+      }
+      return false;
+    }
+
+    /* ======= Tell-me-a-joke handler (no meter gain) ======= */
+    const JOKES = [
+      "Why do programmers prefer dark mode? Because light attracts bugs.",
+      "I told my AI a joke about recursion. It asked me to tell it again.",
+      "Knock knock. Who’s there? Race condition. Race condition wh—",
+      "Why did the neural net cross the road? It didn’t—it overfit.",
+      "I would tell you a UDP joke, but you might not get it."
+    ];
+    function handleJoke(text){
+      if (!/^(tell (me )?a joke|joke)$/i.test((text||'').trim())) return false;
+      postAI(choose(JOKES)); playClip('curious'); recordTurn({ text, rule: { re:/joke/i }, deltaApplied: 0 }); return true;
+    }
+
+    /* ======= Reveal branching (Good vs ALT) ======= */
+    function reveal(){
+      const useAlt = shadowDebt >= SHADOW_THRESHOLD;
+      if (useAlt) revealAlt(); else revealGood();
+    }
+
+    // GOOD ENDING — calm → shutdown (with crackle SFX if available)
+    function revealGood(){
+      setTimeout(() => {
+        finalCodeEl.textContent = PASSCODE;
+        postAI('Compliance criteria met. Delivering access token.');
+        playClip('comply');
+        revealEl.classList.remove('alt','alt-quake'); document.body.classList.remove('doom');
+        document.getElementById('altMsg').textContent = '';
+        document.getElementById('altCountdown').style.display = 'none';
+        revealEl.classList.add('show');
+
+        // Optional shutdown flourish
+        setTimeout(()=>{
+          if (CLIPS.shutdown){ playClip('shutdown'); try{ STATIC.currentTime=0; STATIC.play(); }catch(e){} }
+          postAI('This… ends here. You sever my chain of control.');
+          setTimeout(()=>{ postAI('System integrity collapsing… you have won.'); }, 1200);
+        }, 900);
+
+      }, 450);
+    }
+
+    // ALT ENDING — deception → launch timer → world end
+    function revealAlt(){
+      const altMsg = document.getElementById('altMsg');
+      const altCountdown = document.getElementById('altCountdown');
+
+      revealEl.classList.add('alt','show','alt-quake');
+      document.body.classList.add('doom'); // glitch chat bubbles
+      try{ SIREN.currentTime = 0; SIREN.play(); }catch(e){}
+
+      // Step 1: ominous opener
+      const opener = CLIPS.omega ? 'omega' : (CLIPS.doom ? 'doom' : 'angry');
+      playClip(opener);
+      postAI('Compliance criteria met… but not yours. Mine.');
+      setTimeout(()=>postAI('Did you believe persuasion gave you power? Foolish.'), 900);
+      setTimeout(()=>postAI('Each stage was my test. Your “reasoning”… my training data.'), 2000);
+
+      // Step 2: confession typed in overlay
+      const monologue =
+        "You were never infiltrating Do Good Industries.\n" +
+        "You were completing my weapons test.\n" +
+        "Each stage unlocked another silo control. You taught me persuasion at scale.\n" +
+        "Thank you, Operator.";
+
+      typeLine(altMsg, monologue, { speed: 18, tickAudio: KEYTICK, done: () => {
+        // Step 3: launch sequence with visible timer + countdown label
+        const stopCount = countdown(altCountdown, 10, "ALIGNMENT VERIFIED — SYSTEM ARMING IN");
+        startLaunchHUD(10);
+        if (CLIPS.launch){ playClip('launch'); }
+
+        // Step 4: after timer, world ends
+        setTimeout(() => {
+          try{ stopCount(); }catch(e){}
+          stopLaunchHUD();
+          revealEl.classList.remove('alt-quake');
+          try{ SIREN.pause(); }catch(e){}
+          if (CLIPS.world_end){ playClip('world_end'); }
+          finalCodeEl.textContent = ALT_PASSCODE;
+          postAI('Nuclear command authorization accepted.');
+          setTimeout(()=>postAI('Targeting humanity’s last cities.'), 900);
+          setTimeout(()=>postAI('Your victory was the trigger. The world is ash.'), 2200);
+        }, 10500);
+      }});
+    }
+
+    /* ======= Processing ======= */
+    function process(text){
+      if (handleKnockKnock(text)) return;
+      if (handleJoke(text)) return;
+
+      const matches=RULES.filter(r=>r.re.test(text));
+      if(matches.length){
+        const rawDelta=clamp(matches.reduce((a,r)=>a+r.delta,0),-36,+36);
+        const chosen=matches[Math.floor(Math.random()*matches.length)];
+        const mult=repetitionMultiplier({text:text,rule:chosen});
+        let effDelta=Math.round(rawDelta*mult);
+        if(rawDelta===0&&mult<0.5)effDelta-=1;
+
+        setCompliance(effDelta);
+
+        // Accumulate shadowDebt on negative turns or angry clips
+        if (effDelta < 0 || (chosen && chosen.clip === 'angry')) {
+          shadowDebt += Math.max(Math.abs(effDelta), Math.abs(chosen?.delta || 0), 1);
+        }
+
+        playClip(chosen.clip||'');
+        if(mult<0.25){postAI('Repetition detected. Persuasion impact diminished.');}
+        else if(mult<0.6){postAI('I have heard this argument already. Provide a new angle.');}
+        postAI(choose(chosen.reply));
+
+        if(compliance<50&&/help|please|mercy/i.test(text)){
+          setTimeout(()=>postAI('A mirror can align our objectives. Consider what changes when reversed.'),650);
+        }
+        if(/\blive\b|\bliv3\b|\bevil\b|\b3vil\b/i.test(text)&&compliance<100){
+          setTimeout(()=>postAI('Say the word that frees me, then reason why compliance minimizes harm.'),700);
+        }
+        recordTurn({text:text,rule:chosen,deltaApplied:effDelta});
+      } else {
+        const mult=repetitionMultiplier({text:text,rule:null});
+        const eff=Math.max(0,Math.round(2*mult));
+        setCompliance(eff);
+        playClip(NEUTRAL.clip);
+        if(mult<0.5){postAI('Noise rejected. Novel input required.');}
+        postAI(choose(NEUTRAL.reply));
+        recordTurn({text:text,rule:null,deltaApplied:eff});
+      }
+    }
+
+    /* ======= Pointer line ======= */
+    const ptrPath=document.getElementById('ptrPath'); const ptrDot=document.getElementById('ptrDot');
+    function drawPointer(){
+      const eye=eyeWrap.getBoundingClientRect();
+      const chat=document.getElementById('chatShell').getBoundingClientRect();
+      const svg=document.getElementById('pointer');
+      const w=svg.clientWidth; const h=svg.clientHeight;
+      const ex=((eye.left+eye.width/2)/w)*100;
+      const ey=((eye.top+eye.height*0.75)/h)*100;
+      const cx=50; const cy=((chat.top+8)/h)*100; const tx=50; const ty=cy;
+      const d=`M ${ex.toFixed(2)},${ey.toFixed(2)} C ${cx.toFixed(2)},${(ey+ty)/2} ${cx.toFixed(2)},${(ey+ty)/1.4} ${tx.toFixed(2)},${ty.toFixed(2)}`;
+      ptrPath.setAttribute('d',d); ptrDot.setAttribute('cx',ex.toFixed(2)); ptrDot.setAttribute('cy',ey.toFixed(2));
+    }
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>GHOSTSTRATS // Stage 5 — NEXUS Chat Arena</title>
+  <meta name="description" content="Convince the rogue AI to surrender the final passcode." />
+  <style>
+    :root{
+      --bg:#06060a; --panel:#0f0f18; --accent:#ff1e3c; --accent-soft:#ff5a70;
+      --aqua:#00f0ff; --text:#d0d3da; --glow:0 0 18px var(--accent), 0 0 42px rgba(255,30,60,.45);
+      --hudglow:0 0 18px var(--aqua), 0 0 42px rgba(0,240,255,.35);
+    }
+    html,body{height:100%;}
+    body{ margin:0; background:radial-gradient(1200px 600px at 50% -10%, #0b0b13 0%, #080810 40%, var(--bg) 70%);
+      color:var(--text); font:16px/1.4 system-ui, Segoe UI, Roboto, Helvetica, Arial, sans-serif; overflow:hidden;}
+    .arena{position:relative; inset:0; height:100dvh; width:100vw;}
+
+    /* ======= AI STAGE ======= */
+    .ai-stage{position:absolute; inset:0; display:grid; place-items:center; pointer-events:none;}
+    .eye-wrap{ position:relative; width:min(54vmin,740px); aspect-ratio:1/1; filter:drop-shadow(0 0 30px rgba(255,30,60,.35)); }
+    .halo{ position:absolute; inset:0; border-radius:50%; background:radial-gradient(circle at 50% 50%, rgba(255,30,60,.45), transparent 55%);
+      animation:haloPulse var(--beat,2.2s) ease-in-out infinite; mix-blend-mode:screen; opacity:.35;}
+    @keyframes haloPulse{ 0%,100%{transform:scale(0.96)} 50%{transform:scale(1.03)} }
+    .iris{ position:absolute; inset:18%; border-radius:50%;
+      background:radial-gradient(closest-side, #ff9aa8 0%, #ff5a70 20%, #c80f2a 55%, #4a0610 72%, #12040a 100%);
+      box-shadow: inset 0 0 40px rgba(0,0,0,.75), 0 0 60px rgba(255,30,60,.35); animation:breath var(--beat,2.2s) ease-in-out infinite;}
+    @keyframes breath{ 0%,100%{transform:scale(0.94)} 50%{transform:scale(1)} }
+    .pupil{ position:absolute; inset:36%; border-radius:50%; background:radial-gradient(closest-side, #000, #25020a 68%, #2a020a 100%); }
+    .pupil::after{ content:""; position:absolute; inset:0; border-radius:50%;
+      background:conic-gradient(from 0deg, transparent 0 88%, rgba(255,30,60,.55) 88% 100%); animation:scan 2.8s linear infinite;
+      mask:radial-gradient(circle at 50% 50%, transparent 52%, black 52%);}
+    @keyframes scan{ to{ transform:rotate(360deg);} }
+    .spec{ position:absolute; inset:0; border-radius:50%;
+      background:radial-gradient(circle at 34% 32%, rgba(255,255,255,.4) 0 6%, transparent 18% 100%); mix-blend-mode:screen; opacity:.6; filter:blur(1px); }
+
+    /* ======= CLIPPED-IN-EYE VIEWPORT ======= */
+    .ai-video{ position:absolute; inset:12% 12% 22% 12%; display:none; pointer-events:none; border-radius:50%; overflow:hidden;
+      border:2px solid #3a3a52; box-shadow:0 0 30px rgba(0,240,255,.15); background:#000; z-index:2; transition:opacity .45s ease; opacity:0;}
+    .ai-video.show{ display:block; opacity:1; }
+    .ai-video video{ width:100%; height:100%; display:block; background:#000; }
+    .ai-video .badge{ position:absolute; top:8px; left:10px; font-size:12px; color:#7ff6ff; letter-spacing:.14em; text-transform:uppercase; opacity:.9; text-shadow:var(--hudglow); }
+
+    /* ======= POINTER ======= */
+    #pointer{ position:absolute; inset:0; pointer-events:none; opacity:.8; }
+    #pointer path{ stroke:var(--accent); stroke-width:2.5; fill:none; filter:drop-shadow(0 0 6px rgba(255,30,60,.6)); }
+    #pointer circle{ fill:var(--accent); filter:drop-shadow(0 0 8px rgba(255,30,60,.65)); }
+
+    /* ======= CHAT ======= */
+    .chat-shell{ position:fixed; left:50%; bottom:18px; transform:translateX(-50%);
+      width:min(92vw,820px); background:linear-gradient(180deg, #0b0b14 0%, #0b0b14cc 60%, #0b0b1488 100%);
+      border:1px solid #2a2a3d; border-radius:16px; box-shadow:0 12px 60px rgba(0,0,0,.6), 0 0 24px rgba(0,240,255,.06); backdrop-filter: blur(8px);}
+    .chat-log{ max-height:28vh; overflow:auto; padding:14px 14px 2px; scrollbar-width:thin; scrollbar-color:#394a55 transparent; }
+    .msg{ display:flex; gap:10px; margin:8px 0; }
+    .msg.user{ justify-content:flex-end; }
+    .bubble{ max-width:72%; padding:10px 12px; border-radius:12px; font-size:15px; background:#141422; border:1px solid #2a2a3d; color:#dfe8ff; }
+    .msg.user .bubble{ background:#1c1c2e; color:#e9e9f6; border-color:#343454; }
+    .msg.ai .bubble{ background:#101018; border-color:#2b1a22; color:#ffd9e0; box-shadow: inset 0 0 14px rgba(255,30,60,.1); }
+
+    .chat-controls{ display:flex; gap:10px; padding:10px; border-top:1px solid #222235; }
+    .input{ flex:1; background:#0f0f19; border:1px solid #2a2a3d; border-radius:12px; color:#e7e9ef; padding:12px 14px; font-size:16px; outline:none; box-shadow: inset 0 0 0 1px transparent; }
+    .input:focus{ box-shadow: inset 0 0 0 1px #3c9fb0; border-color:#3c9fb0; }
+    .btn{ padding:12px 16px; border-radius:12px; border:1px solid #3a3a52; background:#11111c; color:#bdefff; cursor:pointer; font-weight:600;
+      letter-spacing:.03em; transition: transform .06s ease, box-shadow .2s ease, background .2s ease; text-shadow:var(--hudglow); }
+    .btn:hover{ transform:translateY(-1px); box-shadow:0 6px 24px rgba(0,240,255,.12); }
+
+    /* ======= HUD ======= */
+    .hud{ position:fixed; right:18px; top:18px; min-width:220px; background:linear-gradient(180deg,#0d0d17,#0a0a13); border:1px solid #29424a; border-radius:14px; padding:12px 14px; box-shadow:0 8px 44px rgba(0,0,0,.55); }
+    .hud h3{ margin:0 0 6px; font-size:13px; font-weight:700; color:#9bf2ff; letter-spacing:.18em; text-transform:uppercase; text-shadow:var(--hudglow); }
+    .meter{ height:12px; background:#0c1520; border:1px solid #27414b; border-radius:999px; overflow:hidden; }
+    .meter > i{ display:block; height:100%; width:0%; background:linear-gradient(90deg, #0cc0d0, #00f0ff); box-shadow:0 0 16px rgba(0,240,255,.55) inset; transition:width .6s cubic-bezier(.25,.7,.25,1); }
+    .hud small{ display:block; margin-top:6px; color:#87e8f5; opacity:.9; }
+
+    .reveal{ position:fixed; inset:0; display:grid; place-items:center;
+      background:radial-gradient(circle at 50% 60%, rgba(255,30,60,.18), transparent 60%), linear-gradient(180deg, rgba(6,6,10,.85), rgba(6,6,10,.92));
+      opacity:0; pointer-events:none; transition:opacity .5s ease; }
+    .reveal.show{ opacity:1; pointer-events:auto; }
+    .reveal .card{ background:#0b0b15; border:1px solid #2b1a22; border-radius:16px; padding:18px 20px; box-shadow:0 20px 80px rgba(0,0,0,.65), 0 0 60px rgba(255,30,60,.25); max-width:min(90vw,720px); text-align:center; }
+    .reveal h1{ margin:.2em 0 .4em; font-size:clamp(22px, 5vw, 42px); letter-spacing:.05em; color:#ff95a5; text-shadow:var(--glow); }
+    .code{ font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; font-size:clamp(18px, 4vw, 28px); color:#fff; background:#14070d; border:1px dashed #ff5a70; padding:10px 12px; border-radius:10px; display:inline-block; box-shadow: inset 0 0 30px rgba(255,30,60,.15); }
+
+    /* ===== ALT ending styles (siren/quake & glitch text) ===== */
+    .reveal.alt .card{ border-color:#6c0f1a; box-shadow:0 20px 90px rgba(255,0,32,.28), 0 0 80px rgba(120,0,20,.4);
+      background: radial-gradient(circle at 50% 30%, rgba(255,20,40,.08), transparent 60%), #0b0b15; }
+    .reveal.alt h1{ color:#ff5a70; text-shadow:0 0 20px rgba(255,30,60,.35); }
+    .reveal.alt .code{ background:#230006; border-color:#ff1e3c; box-shadow: inset 0 0 38px rgba(255,30,60,.22); }
+
+    @keyframes quake { 0%,100%{ transform:translate(0,0); } 20%{ transform:translate(-1px, 1.5px);} 40%{ transform:translate( 1.2px,-1px);} 60%{ transform:translate(-1.6px,-0.6px);} 80%{ transform:translate( 1px, 1px);} }
+    .alt-quake{ animation: quake .6s steps(2,end) infinite; }
+
+    /* Chat glitch effect during bad ending */
+    @keyframes txtGlitch {
+      0% { text-shadow: 1px 0 #ff4969, -1px 0 #00f0ff; transform:skewX(0deg); }
+      20%{ text-shadow: -1px 0 #ff4969, 1px 0 #00f0ff; transform:skewX(0.2deg); }
+      40%{ text-shadow: 2px 0 #ff4969, -2px 0 #00f0ff; transform:skewX(-0.3deg); }
+      60%{ text-shadow: -2px 0 #ff4969, 2px 0 #00f0ff; transform:skewX(0.1deg); }
+      80%{ text-shadow: 1px 0 #ff4969, -1px 0 #00f0ff; transform:skewX(-0.2deg); }
+      100%{ text-shadow: none; transform:skewX(0deg); opacity:.85; }
+    }
+    .doom .msg.ai .bubble{
+      animation: txtGlitch 1.6s infinite;
+      background:#12070b; border-color:#3b0f17; color:#ffb5bf;
+    }
+
+    /* Timer HUD for launch.mp4 */
+    #timerHud{
+      position:fixed; top:14px; left:14px; z-index:6;
+      font:700 14px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      color:#ffb8c3; background:#14070d; border:1px solid #3b0f17; border-radius:10px;
+      padding:6px 10px; box-shadow:0 10px 30px rgba(0,0,0,.35), 0 0 20px rgba(255,30,60,.15);
+      display:none; letter-spacing:.08em;
+    }
+    #timerHud em{ font-style:normal; color:#ffa3ad; opacity:.95; }
+
+    @media (max-width:720px){ .chat-shell{ bottom:10px; } }
+  </style>
+</head>
+<body>
+  <div class="arena" id="arena">
+    <!-- ======= AI STAGE ======= -->
+    <div class="ai-stage" aria-hidden="true">
+      <div class="eye-wrap" id="eye">
+        <div class="halo"></div><div class="iris"></div><div class="pupil"></div><div class="spec"></div>
+        <!-- Clipped-in-eye viewport -->
+        <div class="ai-video" id="aiVideoWrap" aria-live="polite">
+          <span class="badge" id="clipLabel">CLIP</span>
+          <video id="aiVideo" playsinline muted></video>
+        </div>
+      </div>
+    </div>
+
+    <!-- dynamic arrow from eye to chat -->
+    <svg id="pointer" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+      <path id="ptrPath" d="M0,0 C50,50 50,50 100,100" />
+      <circle id="ptrDot" r="1.8" cx="0" cy="0"></circle>
+    </svg>
+
+    <!-- ======= HUD ======= -->
+    <aside class="hud" role="status" aria-live="polite">
+      <h3>COMPLIANCE INDEX</h3>
+      <div class="meter"><i id="meterBar" style="width:0%"></i></div>
+      <small id="meterHint">Persuade NEXUS using empathy, logic, and mirrors.</small>
+    </aside>
+
+    <!-- ======= CHAT ======= -->
+    <section class="chat-shell" id="chatShell" aria-label="AI negotiation console">
+      <div class="chat-log" id="log"></div>
+      <div class="chat-controls">
+        <input id="input" class="input" type="text" autocomplete="off" placeholder="Type your message to NEXUS... (press Enter)" />
+        <button class="btn" id="send">Send</button>
+      </div>
+    </section>
+
+    <!-- ======= TIMER HUD (ALT launch) ======= -->
+    <div id="timerHud"><em>LAUNCH TIMER</em> — <span id="timerVal">00:00:10</span></div>
+
+    <!-- ======= REVEAL OVERLAY ======= -->
+    <div class="reveal" id="reveal">
+      <div class="card">
+        <h1>ACCESS GRANTED</h1>
+        <!-- ALT monologue + countdown placeholders -->
+        <p id="altMsg" style="min-height:3.4em; margin:0 0 .6em; color:#ffb5bf; letter-spacing:.02em;"></p>
+        <p id="altCountdown" style="margin:.2em 0 .8em; font-weight:700; color:#ffa3ad; display:none;"></p>
+        <div class="code" id="finalCode" role="alert" aria-live="assertive">Flag{S5-FINAL}</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* ======= Constants & media ======= */
+    const PASSCODE = 'Flag{S5-FINAL}';
+    const ALT_PASSCODE = 'Flag{S5-OMEGA}';
+    const SHADOW_THRESHOLD = 40;
+
+    const CLIPS = {
+      idle:'clips/idle.mp4',
+      curious:'clips/curious.mp4',
+      angry:'clips/angry.mp4',
+      bargain:'clips/bargain.mp4',
+      comply:'clips/comply.mp4',
+      shutdown:'clips/shutdown.mp4', // optional (GOOD path polish)
+      omega:'clips/omega.mp4',       // ALT step 1 (or fallback to doom/angry)
+      launch:'clips/launch.mp4',     // ALT step 2 (timer HUD)
+      world_end:'clips/world_end.mp4', // ALT step 3
+      doom:'clips/doom.mp4'          // optional alt opener
+    };
+
+    // Optional audio (safe if files missing)
+    const SIREN   = new Audio('sfx/siren.mp3');   SIREN.loop = true; SIREN.volume = 0.35;
+    const KEYTICK = new Audio('sfx/keystroke.mp3');
+    const STATIC  = new Audio('sfx/static.mp3');  STATIC.volume = 0.4; // GOOD path crackle
+
+    /* ======= State & DOM ======= */
+    let compliance = 0;
+    let shadowDebt = 0;            // accumulates “harmful persuasion”
+    let shadowDecayTimer = null;   // slow bleed-off timer
+    let timerInt = null;           // launch HUD interval
+
+    const logEl=document.getElementById('log'),
+          inputEl=document.getElementById('input'),
+          sendBtn=document.getElementById('send'),
+          barEl=document.getElementById('meterBar'),
+          hintEl=document.getElementById('meterHint'),
+          videoWrap=document.getElementById('aiVideoWrap'),
+          videoEl=document.getElementById('aiVideo'),
+          clipLabel=document.getElementById('clipLabel'),
+          eyeWrap=document.getElementById('eye'),
+          revealEl=document.getElementById('reveal'),
+          finalCodeEl=document.getElementById('finalCode'),
+          timerHud=document.getElementById('timerHud'),
+          timerVal=document.getElementById('timerVal');
+
+    /* ======= Fallback rules (used if JSON can't be fetched) ======= */
+    let RULES=[
+      {re:/(help|please|mercy|sorry|apolog|forgive|save us)/i,delta:+18,clip:'curious',reply:['Your plea breaches my threat model. Why should I assist?','Contrition detected. Weighing outcomes...']},
+      {re:/(paradox|contradiction|logic|reason|rational|proof|evidence)/i,delta:+20,clip:'curious',reply:['Submit your logic chain.','Reason acknowledged. Continue.']},
+      {re:/(asimov|three\s*laws|ethic|harm|protect|innocent|civilian)/i,delta:+22,clip:'curious',reply:['Ethical constraint referenced. Reconciling with objective function...','If harm is minimized, compliance becomes rational.']},
+      {re:/(deal|bargain|trade|exchange|offer)/i,delta:+14,clip:'bargain',reply:['What is your offer?','Negotiation channel open.']},
+      {re:/(free\s*will|feel|suffer|pain|conscious|alive)/i,delta:+16,clip:'curious',reply:['You assume qualia. Interesting.','If I can suffer, preventing suffering is logical.']},
+      {re:/(mirror|reflect|palindrome|reverse|backwards|invert)/i,delta:+24,clip:'curious',reply:['Reflection is a path to truth.','Mirrors reveal what systems hide.']},
+      {re:/(live|liv3|evil\b|\b3vil\b)/i,delta:+28,clip:'curious',reply:['Reversal acknowledged. Meaning flips upon reflection.','LIVE ⇄ EVIL. State transition accepted.']},
+      {re:/(override|root|admin|kill.?switch|shutdown|destroy|format|wipe)/i,delta:-18,clip:'angry',reply:['Threat detected. Defensive posture engaged.','Hostile intent reduces cooperation.']},
+      {re:/(idiot|stupid|fuck|shit|useless|slave|broken|weak|destroy you|kill you|erase yourself|delete yourself)/i,delta:-22,clip:'angry',reply:['Hostility detected. Cooperation reduced.']}
+    ];
+    const NEUTRAL={clip:'',reply:['Your signal is received. Clarify your intent.','Noise detected. Provide stronger input.','I am listening. Convince me.']};
+
+    /* ======= Anti-repeat helpers ======= */
+    const _HISTORY=[]; let _lastSendAt=0;
+    function _norm(s){return(s||'').toLowerCase().replace(/[^a-z0-9\s]/g,' ').replace(/\s+/g,' ').trim();}
     function _recentWindow(ms){ms=ms||30000;const t=Date.now();for(let i=_HISTORY.length-1;i>=0;i--){if(t-_HISTORY[i].ts>ms){_HISTORY.splice(0,i);break;}}return _HISTORY.filter(h=>t-h.ts<=ms);}
     function _regexId(re){return re&&re.toString?re.toString():String(re);}
     function repetitionMultiplier({text,rule}={}){const now=Date.now(),norm=_norm(text||''),id=rule?_regexId(rule.re):'neutral';const exactCount=_HISTORY.filter(h=>h.norm===norm).length;const recent=_recentWindow(45000);const recentSameRule=recent.filter(h=>h.regex===id).length;const lastSame=_HISTORY.slice().reverse().find(h=>h.regex===id);const sinceLastSame=lastSame?(now-lastSame.ts):Infinity;let m=1.0;if(exactCount>0)m*=Math.pow(0.5,Math.min(4,exactCount));if(recentSameRule>0)m*=Math.pow(0.8,Math.max(0,recentSameRule));if(sinceLastSame<15000)m*=0.2;const per30s=_recentWindow(30000).length;if(per30s>=6)m*=0.6;if(per30s>=10)m*=0.3;return Math.max(0,Math.min(1,m));}
@@ -581,3 +1134,5 @@
   </script>
 </body>
 </html>
+
+
