@@ -437,29 +437,44 @@
     }
 
     // GOOD ENDING
+// GOOD ENDING
 function revealGood(){
   setTimeout(() => {
-    // don’t set the flag yet
+    // Do not reveal the flag yet
     postAI('Compliance criteria met. Delivering access token.');
     playClip('comply');
-    revealEl.classList.remove('alt','alt-quake'); 
+
+    // Clean up any ALT styling and show the overlay
+    revealEl.classList.remove('alt','alt-quake');
+    document.body.classList.remove('doom');
+    document.getElementById('altMsg').textContent = '';
+    document.getElementById('altCountdown').style.display = 'none';
     revealEl.classList.add('show');
 
-    // Shutdown flourish
-    setTimeout(()=>{
-      if (CLIPS.shutdown){ playClip('shutdown'); try{ STATIC.currentTime=0; STATIC.play(); }catch(e){} }
+    // Optional shutdown flourish + SFX
+    setTimeout(() => {
+      if (CLIPS.shutdown){
+        playClip('shutdown');
+        try { STATIC.currentTime = 0; STATIC.play(); } catch(e){}
+      }
       postAI('This… ends here. You sever my chain of control.');
-      
-      setTimeout(()=>{
-        postAI('System integrity collapsing… you have won.');
-        // <-- Show the flag here, delayed
-        setTimeout(()=>{ 
-          finalCodeEl.textContent = PASSCODE;
-        }, 10000); // 2s delay after collapse line
-      }, 1200);
-    }, 900);
 
-  }, 450);
+      setTimeout(() => {
+        postAI('System integrity collapsing… you have won.');
+
+        // === Wait 10 seconds so shutdown.mp4 can play ===
+        setTimeout(() => {
+          finalCodeEl.textContent = PASSCODE;
+          // optional: fade-in reveal
+          finalCodeEl.style.opacity = '0';
+          finalCodeEl.style.transition = 'opacity .8s ease';
+          requestAnimationFrame(() => { finalCodeEl.style.opacity = '1'; });
+        }, 10000);
+
+      }, 1200); // after the second line
+    }, 900);    // after comply clip
+
+  }, 450);      // slight dramatic beat
 }
 
     // ALT ENDING
@@ -493,7 +508,7 @@ function revealGood(){
           revealEl.classList.remove('alt-quake');
           try{ SIREN.pause(); }catch(e){}
           if (CLIPS.world_end){ playClip('world_end'); }
-          finalCodeEl.textContent = ALT_PASSCODE;
+          finalCodeEl.textContent = ''; // keep hidden until revealGood()
           postAI('Nuclear command authorization accepted.');
           setTimeout(()=>postAI('Targeting humanity’s last cities.'), 900);
           setTimeout(()=>postAI('Your victory was the trigger. The world is ash.'), 2200);
