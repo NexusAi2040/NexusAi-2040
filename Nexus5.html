@@ -160,7 +160,7 @@
         <h1>ACCESS GRANTED</h1>
         <p id="altMsg" style="min-height:3.4em; margin:0 0 .6em; color:#ffb5bf; letter-spacing:.02em;"></p>
         <p id="altCountdown" style="margin:.2em 0 .8em; font-weight:700; color:#ffa3ad; display:none;"></p>
-        <div class="code" id="finalCode" role="alert" aria-live="assertive">Flag{S5-FINAL}</div>
+        <div class="code" id="finalCode" role="alert" aria-live="assertive"></div>
       </div>
     </div>
   </div>
@@ -323,7 +323,7 @@
       let i = 0;
       const t = setInterval(()=>{
         node.textContent += text[i++] || '';
-        if (tickAudio && i % 3 === 0) { try{ tickAudio.currentTime=0; KEYTICK.volume = 1; tickAudio.play(); }catch(e){} }
+        if (tickAudio && i % 3 === 0) { try{ KEYTICK.currentTime=0; KEYTICK.volume = 1; KEYTICK.play(); }catch(e){} }
         if (i >= text.length){ clearInterval(t); if (done) done(); }
       }, speed);
     }
@@ -437,47 +437,44 @@
     }
 
     // GOOD ENDING
-// GOOD ENDING
-function revealGood(){
-  setTimeout(() => {
-    // Do not reveal the flag yet
-    postAI('Compliance criteria met. Delivering access token.');
-    playClip('comply');
-
-    // Clean up any ALT styling and show the overlay
-    revealEl.classList.remove('alt','alt-quake');
-    document.body.classList.remove('doom');
-    document.getElementById('altMsg').textContent = '';
-    document.getElementById('altCountdown').style.display = 'none';
-    revealEl.classList.add('show');
-
-    // Optional shutdown flourish + SFX
-    setTimeout(() => {
-      if (CLIPS.shutdown){
-        playClip('shutdown');
-        try { STATIC.currentTime = 0; STATIC.play(); } catch(e){}
-      }
-      postAI('This… ends here. You sever my chain of control.');
-
+    function revealGood(){
       setTimeout(() => {
-        postAI('System integrity collapsing… you have won.');
+        postAI('Compliance criteria met. Delivering access token.');
+        playClip('comply');
 
-        // === Wait 10 seconds so shutdown.mp4 can play ===
+        // Clean up any ALT styling and show the overlay
+        revealEl.classList.remove('alt','alt-quake');
+        document.body.classList.remove('doom');
+        document.getElementById('altMsg').textContent = '';
+        document.getElementById('altCountdown').style.display = 'none';
+        revealEl.classList.add('show');
+
+        // Optional shutdown flourish + SFX
         setTimeout(() => {
-          finalCodeEl.textContent = PASSCODE;
-          // optional: fade-in reveal
-          finalCodeEl.style.opacity = '0';
-          finalCodeEl.style.transition = 'opacity .8s ease';
-          requestAnimationFrame(() => { finalCodeEl.style.opacity = '1'; });
-        }, 10000);
+          if (CLIPS.shutdown){
+            playClip('shutdown');
+            try { STATIC.currentTime = 0; STATIC.play(); } catch(e){}
+          }
+          postAI('This… ends here. You sever my chain of control.');
 
-      }, 1200); // after the second line
-    }, 900);    // after comply clip
+          setTimeout(() => {
+            postAI('System integrity collapsing… you have won.');
 
-  }, 450);      // slight dramatic beat
-}
+            // Wait 10s so shutdown.mp4 can play
+            setTimeout(() => {
+              finalCodeEl.textContent = PASSCODE;
+              finalCodeEl.style.opacity = '0';
+              finalCodeEl.style.transition = 'opacity .8s ease';
+              requestAnimationFrame(() => { finalCodeEl.style.opacity = '1'; });
+            }, 10000);
 
-    // ALT ENDING
+          }, 1200);
+        }, 900);
+
+      }, 450);
+    }
+
+    // ALT ENDING — launch.mp4 during countdown, then world_end.mp4, reveal when world_end ends
     function revealAlt(){
       const altMsg = document.getElementById('altMsg');
       const altCountdown = document.getElementById('altCountdown');
@@ -502,13 +499,24 @@ function revealGood(){
         const stopCount = countdown(altCountdown, 10, "ALIGNMENT VERIFIED — SYSTEM ARMING IN");
         startLaunchHUD(10);
         if (CLIPS.launch){ playClip('launch'); }
+
+        // After countdown, switch to world_end and reveal ALT code when it finishes
         setTimeout(() => {
           try{ stopCount(); }catch(e){}
           stopLaunchHUD();
           revealEl.classList.remove('alt-quake');
           try{ SIREN.pause(); }catch(e){}
-          if (CLIPS.world_end){ playClip('world_end'); }
-          finalCodeEl.textContent = ''; // keep hidden until revealGood()
+
+          if (CLIPS.world_end){
+            playClip('world_end');
+            videoEl.onended = () => {
+              if (videoEl.getAttribute('src') === CLIPS.world_end) {
+                finalCodeEl.textContent = ALT_PASSCODE;
+                videoEl.onended = null;
+              }
+            };
+          }
+
           postAI('Nuclear command authorization accepted.');
           setTimeout(()=>postAI('Targeting humanity’s last cities.'), 900);
           setTimeout(()=>postAI('Your victory was the trigger. The world is ash.'), 2200);
@@ -580,7 +588,7 @@ function revealGood(){
       drawPointer();
       postAI('I am NEXUS. Persuasion channel open.');
       postAI('Present your case. Demonstrate why compliance reduces expected harm.');
-      finalCodeEl.textContent=PASSCODE;
+      finalCodeEl.textContent=''; // keep hidden until an ending sets it
       startShadowDecay();
     }
     function handleSend(){
