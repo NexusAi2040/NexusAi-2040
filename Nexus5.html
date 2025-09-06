@@ -169,7 +169,7 @@
     /* ======= Constants & media ======= */
     const PASSCODE = 'Flag{S5-FINAL}';
     const ALT_PASSCODE = 'Flag{S5-OMEGA}';
-    const SHADOW_THRESHOLD = 40;
+    const SHADOW_THRESHOLD = 30;
 
     const CLIPS = {
       idle:'clips/idle.mp4',
@@ -361,7 +361,7 @@
     function setCompliance(by){
       // --- Ease tweak: make the game ~20% easier ---
       const POSITIVE_BOOST = 1.25;  // +25% to positive gains
-      const NEGATIVE_SOFTEN = 0.90; // -10% to negative hits
+      const NEGATIVE_SOFTEN = 1.00; // -10% to negative hits
       const adjusted = by > 0 ? Math.round(by * POSITIVE_BOOST)
                               : Math.round(by * NEGATIVE_SOFTEN);
 
