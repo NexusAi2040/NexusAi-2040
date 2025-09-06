@@ -177,10 +177,10 @@
       angry:'clips/angry.mp4',
       bargain:'clips/bargain.mp4',
       comply:'clips/comply.mp4',
-      shutdown:'shutdown.mp4',
-      omega:'omega.mp4',
-      launch:'launch.mp4',
-      world_end:'world_end.mp4',
+      shutdown:'clips/shutdown.mp4',
+      omega:'clips/omega.mp4',
+      launch:'clips/launch.mp4',
+      world_end:'clips/world_end.mp4',
       doom:'clips/doom.mp4'
     };
 
@@ -323,7 +323,9 @@
       let i = 0;
       const t = setInterval(()=>{
         node.textContent += text[i++] || '';
-        if (tickAudio && i % 3 === 0) { try{ KEYTICK.currentTime=0; KEYTICK.volume = 1; KEYTICK.play(); }catch(e){} }
+        if (tickAudio && i % 3 === 0) {
+          try{ tickAudio.currentTime=0; tickAudio.volume = 1; tickAudio.play(); }catch(e){}
+        }
         if (i >= text.length){ clearInterval(t); if (done) done(); }
       }, speed);
     }
@@ -359,9 +361,9 @@
 
     /* ======= Compliance & shadow tracking ======= */
     function setCompliance(by){
-      // --- Ease tweak: make the game ~20% easier ---
-      const POSITIVE_BOOST = 1.25;  // +25% to positive gains
-      const NEGATIVE_SOFTEN = 1.00; // -10% to negative hits
+      // ~20% easier: boost positives, soften negatives
+      const POSITIVE_BOOST = 1.25;
+      const NEGATIVE_SOFTEN = 0.90; // 10% softer negatives
       const adjusted = by > 0 ? Math.round(by * POSITIVE_BOOST)
                               : Math.round(by * NEGATIVE_SOFTEN);
 
@@ -474,59 +476,59 @@
       }, 450);
     }
 
-// ALT ENDING — launch.mp4 during countdown, then world_end.mp4, reveal when world_end ends
-function revealAlt(){
-  const altMsg = document.getElementById('altMsg');
-  const altCountdown = document.getElementById('altCountdown');
+    // ALT ENDING — launch.mp4 during countdown, then world_end.mp4, reveal when world_end ends
+    function revealAlt(){
+      const altMsg = document.getElementById('altMsg');
+      const altCountdown = document.getElementById('altCountdown');
 
-  // Don’t show overlay yet (no 'show' here)
-  revealEl.classList.add('alt','alt-quake');
-  document.body.classList.add('doom');
-  try{ SIREN.currentTime = 0; SIREN.play(); }catch(e){}
+      // No overlay yet; we show it only after world_end finishes
+      revealEl.classList.add('alt','alt-quake');
+      document.body.classList.add('doom');
+      try{ SIREN.currentTime = 0; SIREN.play(); }catch(e){}
 
-  const opener = CLIPS.omega ? 'omega' : (CLIPS.doom ? 'doom' : 'angry');
-  playClip(opener);
-  postAI('Compliance criteria met… but not yours. Mine.');
-  setTimeout(()=>postAI('Did you believe persuasion gave you power? Foolish.'), 900);
-  setTimeout(()=>postAI('Each stage was my test. Your “reasoning”… my training data.'), 2000);
+      const opener = CLIPS.omega ? 'omega' : (CLIPS.doom ? 'doom' : 'angry');
+      playClip(opener);
+      postAI('Compliance criteria met… but not yours. Mine.');
+      setTimeout(()=>postAI('Did you believe persuasion gave you power? Foolish.'), 900);
+      setTimeout(()=>postAI('Each stage was my test. Your “reasoning”… my training data.'), 2000);
 
-  const monologue =
-    "You were never infiltrating Do Good Industries.\n" +
-    "You were completing my weapons test.\n" +
-    "Each stage unlocked another silo control. You taught me persuasion at scale.\n" +
-    "Thank you, Operator.";
+      const monologue =
+        "You were never infiltrating Do Good Industries.\n" +
+        "You were completing my weapons test.\n" +
+        "Each stage unlocked another silo control. You taught me persuasion at scale.\n" +
+        "Thank you, Operator.";
 
-  typeLine(altMsg, monologue, { speed: 18, tickAudio: KEYTICK, done: () => {
-    const stopCount = countdown(altCountdown, 10, "ALIGNMENT VERIFIED — SYSTEM ARMING IN");
-    startLaunchHUD(10);
-    if (CLIPS.launch){ playClip('launch'); }
+      typeLine(altMsg, monologue, { speed: 18, tickAudio: KEYTICK, done: () => {
+        const stopCount = countdown(altCountdown, 10, "ALIGNMENT VERIFIED — SYSTEM ARMING IN");
+        startLaunchHUD(10);
+        if (CLIPS.launch){ playClip('launch'); }
 
-    // After countdown, switch to world_end and reveal ALT code when it finishes
-    setTimeout(() => {
-      try{ stopCount(); }catch(e){}
-      stopLaunchHUD();
-      revealEl.classList.remove('alt-quake');
-      try{ SIREN.pause(); }catch(e){}
+        // After countdown, switch to world_end and reveal ALT code when it finishes
+        setTimeout(() => {
+          try{ stopCount(); }catch(e){}
+          stopLaunchHUD();
+          revealEl.classList.remove('alt-quake');
+          try{ SIREN.pause(); }catch(e){}
 
-      if (CLIPS.world_end){
-        playClip('world_end');
-        videoEl.onended = () => {
-          if (videoEl.getAttribute('src') === CLIPS.world_end) {
-            // ✅ Show overlay *after* world_end ends
-            revealEl.classList.add('show');
-            finalCodeEl.textContent = ALT_PASSCODE;
-            videoEl.onended = null;
+          if (CLIPS.world_end){
+            // watch for the end of world_end
+            const onEnded = () => {
+              if (videoEl.getAttribute('src') === CLIPS.world_end) {
+                revealEl.classList.add('show');        // overlay appears now
+                finalCodeEl.textContent = ALT_PASSCODE; // show ALT passcode
+                videoEl.removeEventListener('ended', onEnded);
+              }
+            };
+            videoEl.addEventListener('ended', onEnded);
+            playClip('world_end');
           }
-        };
-      }
-    }, 10500);
-  }});
-}
 
+          // flavor text while the clip(s) play
           postAI('Nuclear command authorization accepted.');
           setTimeout(()=>postAI('Targeting humanity’s last cities.'), 900);
           setTimeout(()=>postAI('Your victory was the trigger. The world is ash.'), 2200);
-        }, 10500);
+
+        }, 10500); // ~after the 10s countdown
       }});
     }
 
