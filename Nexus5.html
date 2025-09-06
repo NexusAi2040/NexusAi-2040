@@ -154,6 +154,10 @@
     <!-- ======= TIMER HUD (ALT launch) ======= -->
     <div id="timerHud"><em>LAUNCH TIMER</em> — <span id="timerVal">00:00:10</span></div>
 
+    <!-- Hidden audio-only players for MP4 tracks -->
+    <audio id="launchAudio"></audio>
+    <audio id="worldEndAudio"></audio>
+
     <!-- ======= REVEAL OVERLAY ======= -->
     <div class="reveal" id="reveal">
       <div class="card">
@@ -168,7 +172,7 @@
   <script>
     /* ======= Constants & media ======= */
     const PASSCODE = 'Flag{S5-FINAL}';
-    const ALT_PASSCODE = 'NEXUS WINS';
+    const ALT_PASSCODE = 'Flag{S5-OMEGA}';
     const SHADOW_THRESHOLD = 30;
 
     const CLIPS = {
@@ -177,10 +181,10 @@
       angry:'clips/angry.mp4',
       bargain:'clips/bargain.mp4',
       comply:'clips/comply.mp4',
-      shutdown:'clips/shutdown.mp4',
-      omega:'clips/omega.mp4',
-      launch:'clips/launch.mp4',
-      world_end:'clips/world_end.mp4',
+      shutdown:'shutdown.mp4',
+      omega:'omega.mp4',
+      launch:'launch.mp4',
+      world_end:'world_end.mp4',
       doom:'clips/doom.mp4'
     };
 
@@ -323,9 +327,7 @@
       let i = 0;
       const t = setInterval(()=>{
         node.textContent += text[i++] || '';
-        if (tickAudio && i % 3 === 0) {
-          try{ tickAudio.currentTime=0; tickAudio.volume = 1; tickAudio.play(); }catch(e){}
-        }
+        if (tickAudio && i % 3 === 0) { try{ KEYTICK.currentTime=0; KEYTICK.volume = 1; KEYTICK.play(); }catch(e){} }
         if (i >= text.length){ clearInterval(t); if (done) done(); }
       }, speed);
     }
@@ -336,7 +338,7 @@
       const t = setInterval(()=>{
         left--;
         node.textContent = `${label}: ${left}s`;
-        if (left <= 0){ clearInterval(t); node.textContent = "YOU HELPED ME DESTROY HUMANITY, THANK YOU........... refreash to try and defeat me again."; }
+        if (left <= 0){ clearInterval(t); node.textContent = "WEAPON CONTROL: ONLINE"; }
       }, 1000);
       return () => clearInterval(t);
     }
@@ -361,9 +363,8 @@
 
     /* ======= Compliance & shadow tracking ======= */
     function setCompliance(by){
-      // ~20% easier: boost positives, soften negatives
       const POSITIVE_BOOST = 1.25;
-      const NEGATIVE_SOFTEN = 0.90; // 10% softer negatives
+      const NEGATIVE_SOFTEN = 1.00;
       const adjusted = by > 0 ? Math.round(by * POSITIVE_BOOST)
                               : Math.round(by * NEGATIVE_SOFTEN);
 
@@ -394,6 +395,30 @@
     }
     videoEl.addEventListener('ended', ()=>{ videoWrap.classList.remove('show'); });
     videoEl.addEventListener('error',  ()=>{ videoWrap.classList.remove('show'); });
+
+    /* ======= MP4 Audio-only playback ======= */
+    const launchAudio   = document.getElementById('launchAudio');
+    const worldEndAudio = document.getElementById('worldEndAudio');
+
+    function playLaunchAudio(){
+      try {
+        launchAudio.src = CLIPS.launch;
+        launchAudio.volume = 0.9;
+        launchAudio.muted = false;
+        launchAudio.currentTime = 0;
+        launchAudio.play().catch(()=>{ /* fallback to video-in-eye if blocked */ playClip('launch'); });
+      } catch(e){ console.warn("Launch audio error", e); }
+    }
+
+    function playWorldEndAudio(){
+      try {
+        worldEndAudio.src = CLIPS.world_end;
+        worldEndAudio.volume = 0.9;
+        worldEndAudio.muted = false;
+        worldEndAudio.currentTime = 0;
+        worldEndAudio.play().catch(()=>{ /* fallback to video-in-eye if blocked */ playClip('world_end'); });
+      } catch(e){ console.warn("World_end audio error", e); }
+    }
 
     /* ======= Knock-knock flow ======= */
     let KK_STATE = 'idle'; let KK_SUBJ  = '';
@@ -444,14 +469,12 @@
         postAI('Compliance criteria met. Delivering access token.');
         playClip('comply');
 
-        // Clean up any ALT styling and show the overlay
         revealEl.classList.remove('alt','alt-quake');
         document.body.classList.remove('doom');
         document.getElementById('altMsg').textContent = '';
         document.getElementById('altCountdown').style.display = 'none';
         revealEl.classList.add('show');
 
-        // Optional shutdown flourish + SFX
         setTimeout(() => {
           if (CLIPS.shutdown){
             playClip('shutdown');
@@ -461,27 +484,23 @@
 
           setTimeout(() => {
             postAI('System integrity collapsing… you have won.');
-
-            // Wait 10s so shutdown.mp4 can play
             setTimeout(() => {
               finalCodeEl.textContent = PASSCODE;
               finalCodeEl.style.opacity = '0';
               finalCodeEl.style.transition = 'opacity .8s ease';
               requestAnimationFrame(() => { finalCodeEl.style.opacity = '1'; });
             }, 10000);
-
           }, 1200);
         }, 900);
-
       }, 450);
     }
 
-    // ALT ENDING — launch.mp4 during countdown, then world_end.mp4, reveal when world_end ends
+    // ALT ENDING — launch.mp4 (audio-only) during countdown, then world_end.mp4 (audio-only), reveal when world_end audio ends
     function revealAlt(){
       const altMsg = document.getElementById('altMsg');
       const altCountdown = document.getElementById('altCountdown');
 
-      // No overlay yet; we show it only after world_end finishes
+      // Prep bad-ending visuals, but DON'T show overlay yet
       revealEl.classList.add('alt','alt-quake');
       document.body.classList.add('doom');
       try{ SIREN.currentTime = 0; SIREN.play(); }catch(e){}
@@ -501,34 +520,30 @@
       typeLine(altMsg, monologue, { speed: 18, tickAudio: KEYTICK, done: () => {
         const stopCount = countdown(altCountdown, 10, "ALIGNMENT VERIFIED — SYSTEM ARMING IN");
         startLaunchHUD(10);
-        if (CLIPS.launch){ playClip('launch'); }
 
-        // After countdown, switch to world_end and reveal ALT code when it finishes
+        // AUDIO-ONLY: launch
+        playLaunchAudio();
+
         setTimeout(() => {
           try{ stopCount(); }catch(e){}
           stopLaunchHUD();
           revealEl.classList.remove('alt-quake');
           try{ SIREN.pause(); }catch(e){}
 
-          if (CLIPS.world_end){
-            // watch for the end of world_end
-            const onEnded = () => {
-              if (videoEl.getAttribute('src') === CLIPS.world_end) {
-                revealEl.classList.add('show');        // overlay appears now
-                finalCodeEl.textContent = ALT_PASSCODE; // show ALT passcode
-                videoEl.removeEventListener('ended', onEnded);
-              }
-            };
-            videoEl.addEventListener('ended', onEnded);
-            playClip('world_end');
-          }
+          // AUDIO-ONLY: world_end, then reveal when audio finishes
+          playWorldEndAudio();
 
-          // flavor text while the clip(s) play
+          // when world_end audio ends, show overlay + set code
+          worldEndAudio.onended = () => {
+            worldEndAudio.onended = null;
+            revealEl.classList.add('show');
+            finalCodeEl.textContent = ALT_PASSCODE;
+          };
+
           postAI('Nuclear command authorization accepted.');
           setTimeout(()=>postAI('Targeting humanity’s last cities.'), 900);
           setTimeout(()=>postAI('Your victory was the trigger. The world is ash.'), 2200);
-
-        }, 10500); // ~after the 10s countdown
+        }, 10500);
       }});
     }
 
@@ -614,7 +629,7 @@
     // ===== AUDIO/VIDEO UNLOCK ON FIRST USER GESTURE =====
     window.addEventListener('click', () => {
       if (videoEl.paused) { videoEl.play().catch(()=>{}); }
-      [SIREN, KEYTICK, STATIC].forEach(a => {
+      [SIREN, KEYTICK, STATIC, launchAudio, worldEndAudio].forEach(a => {
         try { a.currentTime = 0; a.play().then(() => a.pause()).catch(()=>{}); } catch (_) {}
       });
     }, { once:true });
