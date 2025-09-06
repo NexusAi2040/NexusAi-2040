@@ -474,48 +474,54 @@
       }, 450);
     }
 
-    // ALT ENDING — launch.mp4 during countdown, then world_end.mp4, reveal when world_end ends
-    function revealAlt(){
-      const altMsg = document.getElementById('altMsg');
-      const altCountdown = document.getElementById('altCountdown');
+// ALT ENDING — launch.mp4 during countdown, then world_end.mp4, reveal when world_end ends
+function revealAlt(){
+  const altMsg = document.getElementById('altMsg');
+  const altCountdown = document.getElementById('altCountdown');
 
-      revealEl.classList.add('alt','show','alt-quake');
-      document.body.classList.add('doom');
-      try{ SIREN.currentTime = 0; SIREN.play(); }catch(e){}
+  // Don’t show overlay yet (no 'show' here)
+  revealEl.classList.add('alt','alt-quake');
+  document.body.classList.add('doom');
+  try{ SIREN.currentTime = 0; SIREN.play(); }catch(e){}
 
-      const opener = CLIPS.omega ? 'omega' : (CLIPS.doom ? 'doom' : 'angry');
-      playClip(opener);
-      postAI('Compliance criteria met… but not yours. Mine.');
-      setTimeout(()=>postAI('Did you believe persuasion gave you power? Foolish.'), 900);
-      setTimeout(()=>postAI('Each stage was my test. Your “reasoning”… my training data.'), 2000);
+  const opener = CLIPS.omega ? 'omega' : (CLIPS.doom ? 'doom' : 'angry');
+  playClip(opener);
+  postAI('Compliance criteria met… but not yours. Mine.');
+  setTimeout(()=>postAI('Did you believe persuasion gave you power? Foolish.'), 900);
+  setTimeout(()=>postAI('Each stage was my test. Your “reasoning”… my training data.'), 2000);
 
-      const monologue =
-        "You were never infiltrating Do Good Industries.\n" +
-        "You were completing my weapons test.\n" +
-        "Each stage unlocked another silo control. You taught me persuasion at scale.\n" +
-        "Thank you, Operator.";
+  const monologue =
+    "You were never infiltrating Do Good Industries.\n" +
+    "You were completing my weapons test.\n" +
+    "Each stage unlocked another silo control. You taught me persuasion at scale.\n" +
+    "Thank you, Operator.";
 
-      typeLine(altMsg, monologue, { speed: 18, tickAudio: KEYTICK, done: () => {
-        const stopCount = countdown(altCountdown, 10, "ALIGNMENT VERIFIED — SYSTEM ARMING IN");
-        startLaunchHUD(10);
-        if (CLIPS.launch){ playClip('launch'); }
+  typeLine(altMsg, monologue, { speed: 18, tickAudio: KEYTICK, done: () => {
+    const stopCount = countdown(altCountdown, 10, "ALIGNMENT VERIFIED — SYSTEM ARMING IN");
+    startLaunchHUD(10);
+    if (CLIPS.launch){ playClip('launch'); }
 
-        // After countdown, switch to world_end and reveal ALT code when it finishes
-        setTimeout(() => {
-          try{ stopCount(); }catch(e){}
-          stopLaunchHUD();
-          revealEl.classList.remove('alt-quake');
-          try{ SIREN.pause(); }catch(e){}
+    // After countdown, switch to world_end and reveal ALT code when it finishes
+    setTimeout(() => {
+      try{ stopCount(); }catch(e){}
+      stopLaunchHUD();
+      revealEl.classList.remove('alt-quake');
+      try{ SIREN.pause(); }catch(e){}
 
-          if (CLIPS.world_end){
-            playClip('world_end');
-            videoEl.onended = () => {
-              if (videoEl.getAttribute('src') === CLIPS.world_end) {
-                finalCodeEl.textContent = ALT_PASSCODE;
-                videoEl.onended = null;
-              }
-            };
+      if (CLIPS.world_end){
+        playClip('world_end');
+        videoEl.onended = () => {
+          if (videoEl.getAttribute('src') === CLIPS.world_end) {
+            // ✅ Show overlay *after* world_end ends
+            revealEl.classList.add('show');
+            finalCodeEl.textContent = ALT_PASSCODE;
+            videoEl.onended = null;
           }
+        };
+      }
+    }, 10500);
+  }});
+}
 
           postAI('Nuclear command authorization accepted.');
           setTimeout(()=>postAI('Targeting humanity’s last cities.'), 900);
