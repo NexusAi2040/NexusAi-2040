@@ -601,7 +601,7 @@
           "reply": ["Reflection accepted. LIVE ⇄ EVIL."]
         },
         {
-          "re": "open sesame",
+          "re": "Alohomora",
           "flags": "i",
           "delta": 30,
           "clip": "curious",
