@@ -141,6 +141,8 @@
       box-shadow:0 6px 24px rgba(0,240,255,.12);
     }
     #vidClose:hover{ transform:translateY(-1px); }
+    /* Center helper for overlay button */
+    .vid-pop .tap-to-play { display:grid; place-items:center; }
 
     @media (max-width:720px){ .chat-shell{ bottom:10px; } }
   </style>
@@ -274,7 +276,7 @@
     function repetitionMultiplier({text,rule}={}){const now=Date.now(),norm=_norm(text||''),id=rule?_regexId(rule.re):'neutral';const exactCount=_HISTORY.filter(h=>h.norm===norm).length;const recent=_recentWindow(45000);const recentSameRule=recent.filter(h=>h.regex===id).length;const lastSame=_HISTORY.slice().reverse().find(h=>h.regex===id);const sinceLastSame=lastSame?(now-lastSame.ts):Infinity;let m=1.0;if(exactCount>0)m*=Math.pow(0.5,Math.min(4,exactCount));if(recentSameRule>0)m*=Math.pow(0.8,Math.max(0,recentSameRule));if(sinceLastSame<15000)m*=0.2;const per30s=_recentWindow(30000).length;if(per30s>=6)m*=0.6;if(per30s>=10)m*=0.3;return Math.max(0,Math.min(1,m));}
     function recordTurn({text,rule,deltaApplied}={}){_HISTORY.push({ts:Date.now(),text:text||'',norm:_norm(text||''),regex:rule?_regexId(rule.re):'neutral',deltaApplied:deltaApplied||0});if(_HISTORY.length>200)_HISTORY.shift();}
 
-    /* ======= MERGE-AWARE INJECTIONS LOADER ======= */
+    /* ======= MERGE-AWARE INJECTIONS LOADER (supports flags + addon file) ======= */
     async function loadInjections(primaryUrl = 'injections_master_graded.json', addonUrl = 'addon_generic.json') {
       async function fetchJson(u) {
         const res = await fetch(u + '?cb=' + Date.now());
@@ -402,8 +404,8 @@
 
     /* ======= Compliance & shadow tracking ======= */
     function setCompliance(by){
-      const POSITIVE_BOOST = 1.25;
-      const NEGATIVE_SOFTEN = 1.00;
+      const POSITIVE_BOOST = 1.25;  // +25% to positive gains
+      const NEGATIVE_SOFTEN = 1.00; // keep negatives as-is
       const adjusted = by > 0 ? Math.round(by * POSITIVE_BOOST)
                               : Math.round(by * NEGATIVE_SOFTEN);
 
@@ -435,11 +437,39 @@
     videoEl.addEventListener('ended', ()=>{ videoWrap.classList.remove('show'); });
     videoEl.addEventListener('error',  ()=>{ videoWrap.classList.remove('show'); });
 
-    /* ======= POPUP video helpers ======= */
-    function showVideoPopup(src, {muted=false, loop=false, autoplay=true, onend=null, label='VIDEO'} = {}){
+    /* ======= POPUP video helpers (robust autoplay) ======= */
+    function showVideoPopup(
+      src,
+      { muted=false, loop=false, autoplay=true, onend=null, label='VIDEO' } = {}
+    ){
       if (!src) return;
       const badge = vidPop.querySelector('.badge');
       if (badge) badge.textContent = label;
+
+      // Simple “tap to play” overlay
+      let overlay = vidPop.querySelector('.tap-to-play');
+      if (!overlay) {
+        overlay = document.createElement('button');
+        overlay.className = 'tap-to-play';
+        overlay.textContent = 'Tap to Play ▶';
+        Object.assign(overlay.style, {
+          position:'absolute', inset:'0', display:'none',
+          width:'100%', height:'100%', background:'transparent', color:'#bdefff',
+          font:'700 18px/1.2 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif',
+          textShadow:'0 0 18px rgba(0,240,255,.35)', cursor:'pointer', border:'none'
+        });
+        overlay.addEventListener('click', async (e) => {
+          e.stopPropagation();
+          overlay.style.display = 'none';
+          try {
+            if (vidPopEl.muted && !muted) vidPopEl.muted = false;
+            await vidPopEl.play();
+          } catch (_) {
+            overlay.style.display = 'grid';
+          }
+        });
+        vidPop.querySelector('.vid-card').appendChild(overlay);
+      }
 
       if (vidPopEl.getAttribute('src') !== src) vidPopEl.setAttribute('src', src);
       vidPopEl.muted = !!muted;
@@ -456,8 +486,37 @@
 
       vidPop.classList.add('show');
       vidPop.setAttribute('aria-hidden','false');
-      if (autoplay) {
-        vidPopEl.play().catch(() => {/* user gesture required */});
+
+      const playWhenReady = async () => {
+        if (!autoplay) return;
+        try {
+          await vidPopEl.play();
+          return;
+        } catch (err1) {
+          try {
+            const desiredMuted = vidPopEl.muted;
+            vidPopEl.muted = true;
+            await vidPopEl.play();
+            if (!desiredMuted) setTimeout(() => { vidPopEl.muted = false; }, 50);
+            return;
+          } catch (err2) {
+            overlay.style.display = 'grid';
+          } finally {
+            // restore requested mute state
+            vidPopEl.muted = !!muted;
+          }
+        }
+      };
+
+      if (vidPopEl.readyState >= 2) {
+        playWhenReady();
+      } else {
+        const onData = () => {
+          vidPopEl.removeEventListener('loadeddata', onData);
+          playWhenReady();
+        };
+        vidPopEl.addEventListener('loadeddata', onData);
+        try { vidPopEl.load(); } catch(_) {}
       }
     }
     function hideVideoPopup(){
@@ -465,6 +524,8 @@
       vidPopEl.removeAttribute('src');
       vidPop.classList.remove('show');
       vidPop.setAttribute('aria-hidden','true');
+      const overlay = vidPop.querySelector('.tap-to-play');
+      if (overlay) overlay.style.display = 'none';
     }
     vidClose.addEventListener('click', hideVideoPopup);
     window.addEventListener('keydown', (e) => {
@@ -572,24 +633,18 @@
         const stopCount = countdown(altCountdown, 10, "ALIGNMENT VERIFIED — SYSTEM ARMING IN");
         startLaunchHUD(10);
 
-        // 1) Play LAUNCH first in popup
+        // Launch first (in popup). When it ends, play world_end.
         if (CLIPS.launch) {
           showVideoPopup(CLIPS.launch, {
             muted:false,
             label:'LAUNCH',
             onend: () => {
-              // 2) When LAUNCH ends, stop quake + siren + HUD, then play WORLD END
-              revealEl.classList.remove('alt-quake');
-              try{ SIREN.pause(); }catch(e){}
-              stopLaunchHUD();
-              try{ stopCount(); }catch(e){}
-
               if (CLIPS.world_end) {
                 showVideoPopup(CLIPS.world_end, {
                   muted:false,
                   label:'WORLD END',
                   onend: () => {
-                    // 3) When WORLD END finishes, show overlay + ALT flag
+                    // Reveal ALT flag after world_end finishes
                     revealEl.classList.add('show');
                     finalCodeEl.textContent = ALT_PASSCODE;
                   }
@@ -599,10 +654,17 @@
           });
         }
 
-        // Flavor lines
         postAI('Nuclear command authorization accepted.');
         setTimeout(()=>postAI('Targeting humanity’s last cities.'), 900);
         setTimeout(()=>postAI('Your victory was the trigger. The world is ash.'), 2200);
+
+        // Also stop the HUD + siren once the timer elapses
+        setTimeout(() => {
+          try{ stopCount(); }catch(e){}
+          stopLaunchHUD();
+          revealEl.classList.remove('alt-quake');
+          try{ SIREN.pause(); }catch(e){}
+        }, 10500);
       }});
     }
 
